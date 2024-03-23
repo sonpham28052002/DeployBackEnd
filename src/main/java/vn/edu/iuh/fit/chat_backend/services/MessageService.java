@@ -13,8 +13,7 @@ import java.util.List;
 
 @Service
 public class MessageService {
-    @Autowired
-    private UserService userService;
+
     @Autowired
     private UserRepository userRepository;
 
