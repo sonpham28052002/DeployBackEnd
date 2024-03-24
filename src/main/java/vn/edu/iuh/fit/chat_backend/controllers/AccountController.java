@@ -18,22 +18,41 @@ public class AccountController {
     private AccountRepository accountRepository;
 
     @PutMapping("/updatePasswordAccount")
-    public boolean updatePasswordAccount(@RequestParam String phone,@RequestParam String passwordOld,@RequestParam String passwordNew){
-        return accountService.updatePasswordAccount(phone,passwordOld,passwordNew);
+    public boolean updatePasswordAccount(@RequestParam String phone, @RequestParam String passwordOld, @RequestParam String passwordNew) {
+        return accountService.updatePasswordAccount(phone, passwordOld, passwordNew);
     }
 
     @GetMapping("/getAccountPhoneAndPassword")
-    public Account getAccountByPhoneAndPassword(@RequestParam String phone ,@RequestParam String password){
-        return accountService.getAccountByPhoneAndPassword(phone,password);
+    public Account getAccountByPhoneAndPassword(@RequestParam String phone, @RequestParam String password) {
+        return accountService.getAccountByPhoneAndPassword(phone, password);
     }
+
     @GetMapping("/getAccountByPhone")
-    public Account getAccountByPhone(@RequestParam String phone){
+    public Account getAccountByPhone(@RequestParam String phone) {
         System.out.println(phone);
         System.out.println(accountService.getAccountByPhone(phone.trim()));
         return accountService.getAccountByPhone(phone);
     }
+
     @GetMapping("/all")
-    public List<Account> getall(){
+    public List<Account> getAll() {
         return accountRepository.findAll();
+    }
+
+    @PostMapping("/registerAccount")
+    public Account registerAccount(@RequestBody Account account) {
+        return accountRepository.save(account);
+    }
+
+    @DeleteMapping("/deleteAccountById")
+    public boolean deleteAccountById(@RequestParam String id) {
+        try {
+            accountRepository.deleteById(id);
+            return true;
+
+        } catch (Exception exception) {
+            exception.printStackTrace();
+        }
+        return false;
     }
 }
