@@ -9,6 +9,7 @@ import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 import vn.edu.iuh.fit.chat_backend.types.Gender;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
@@ -30,6 +31,7 @@ public class User {
     private String phone;
     private Gender gender;
     private String Bio;
+    private LocalDate DOB;
     private String avt;
     private String coverImage;
     private LocalDateTime logOut;

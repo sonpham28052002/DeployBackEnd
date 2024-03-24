@@ -9,7 +9,6 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/users")
-@CrossOrigin("*")
 public class UserController {
     @Autowired
     private UserRepository userRepository;
@@ -22,6 +21,14 @@ public class UserController {
     @GetMapping("/getUserById")
     public User getUserById(@RequestParam String id) {
         return userRepository.findById(id).get();
+    }
+
+    @GetMapping("/getInfoUserById")
+    public User getInfoUserById(@RequestParam String id) {
+         User user= userRepository.findById(id).get();
+         user.setConversation(null);
+         user.setFriendList(null);
+        return user;
     }
 
 }
