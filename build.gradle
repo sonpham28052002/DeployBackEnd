@@ -25,8 +25,11 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-data-mongodb'
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 	implementation 'net.datafaker:datafaker:2.1.0'
-	implementation("software.amazon.awssdk:s3:2.25.14")
+//	implementation("software.amazon.awssdk:s3:2.25.14")
 	implementation 'org.springframework.boot:spring-boot-starter-websocket'
+
+	implementation 'com.azure:azure-storage-blob:12.25.3'
+	implementation 'io.netty:netty-all:4.1.107.Final'
 
 	compileOnly 'org.projectlombok:lombok'
 	developmentOnly 'org.springframework.boot:spring-boot-devtools'
