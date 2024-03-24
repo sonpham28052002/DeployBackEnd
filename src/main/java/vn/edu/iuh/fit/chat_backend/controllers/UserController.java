@@ -5,7 +5,9 @@ import org.springframework.web.bind.annotation.*;
 import vn.edu.iuh.fit.chat_backend.models.User;
 import vn.edu.iuh.fit.chat_backend.repositories.UserRepository;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/users")
@@ -19,16 +21,23 @@ public class UserController {
     }
 
     @GetMapping("/getUserById")
-    public User getUserById(@RequestParam String id) {
-        return userRepository.findById(id).get();
+    public Optional<User> getUserById(@RequestParam String id) {
+        return userRepository.findById(id);
     }
 
     @GetMapping("/getInfoUserById")
-    public User getInfoUserById(@RequestParam String id) {
-         User user= userRepository.findById(id).get();
-         user.setConversation(null);
-         user.setFriendList(null);
+    public Optional<User> getInfoUserById(@RequestParam String id) {
+         Optional<User> user= userRepository.findById(id);
+         user.get().setConversation(null);
+         user.get().setFriendList(null);
         return user;
+    }
+
+    @PostMapping("/insertUser")
+    public User insertUser(@RequestBody User user){
+        user.setConversation(new ArrayList<>());
+        user.setFriendList(new ArrayList<>());
+        return userRepository.save(user);
     }
 
 }

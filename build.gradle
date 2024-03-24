@@ -28,6 +28,10 @@ dependencies {
 //	implementation("software.amazon.awssdk:s3:2.25.14")
 	implementation 'org.springframework.boot:spring-boot-starter-websocket'
 
+
+	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.2.0'
+
+
 	implementation 'com.azure:azure-storage-blob:12.25.3'
 	implementation 'io.netty:netty-all:4.1.107.Final'
 
