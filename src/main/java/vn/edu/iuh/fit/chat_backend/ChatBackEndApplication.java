@@ -20,8 +20,7 @@ public class ChatBackEndApplication {
 				registry.addMapping("/**")
 						.allowedOrigins("*")
 						.allowedHeaders("*")
-						.allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
-						.allowCredentials(true);
+						.allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS");
 			}
 		};
 	}
