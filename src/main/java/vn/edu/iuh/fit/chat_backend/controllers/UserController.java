@@ -1,6 +1,7 @@
 package vn.edu.iuh.fit.chat_backend.controllers;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import vn.edu.iuh.fit.chat_backend.models.User;
 import vn.edu.iuh.fit.chat_backend.repositories.UserRepository;
@@ -10,7 +11,7 @@ import java.util.List;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("/users")
+@RequestMapping(value = "/users",produces = MediaType.APPLICATION_JSON_VALUE)
 public class UserController {
     @Autowired
     private UserRepository userRepository;

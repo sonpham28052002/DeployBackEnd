@@ -2,6 +2,7 @@ package vn.edu.iuh.fit.chat_backend.controllers;
 
 import lombok.Getter;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import vn.edu.iuh.fit.chat_backend.models.Account;
 import vn.edu.iuh.fit.chat_backend.repositories.AccountRepository;
@@ -10,8 +11,7 @@ import vn.edu.iuh.fit.chat_backend.services.AccountService;
 import java.util.List;
 
 @RestController
-@RequestMapping("/account")
-@CrossOrigin("*")
+@RequestMapping(value = "/account",produces = MediaType.APPLICATION_JSON_VALUE)
 public class AccountController {
     @Autowired
     private AccountService accountService;
