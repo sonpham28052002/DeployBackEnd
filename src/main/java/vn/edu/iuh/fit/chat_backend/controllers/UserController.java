@@ -40,5 +40,11 @@ public class UserController {
         user.setFriendList(new ArrayList<>());
         return userRepository.save(user);
     }
+    @PostMapping("/updateUser")
+    public User updateUser(@RequestBody User user){
+        user.setConversation(new ArrayList<>());
+        user.setFriendList(new ArrayList<>());
+        return userRepository.save(user);
+    }
 
 }

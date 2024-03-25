@@ -19,6 +19,12 @@ public class AzureController {
         String type =file.getOriginalFilename().substring(file.getOriginalFilename().lastIndexOf(".")+1);
         return azureStorageServive.uploadFile(UUID.randomUUID().toString()+"."+type,file.getInputStream(),file.getSize(),file.getContentType());
     }
+    @PostMapping("/changeImage")
+    public String changeImage(@RequestParam MultipartFile file, @RequestParam String name) throws IOException {
+        String type = file.getOriginalFilename().substring(file.getOriginalFilename().lastIndexOf(".")+1);
+        String nameNew =  name.substring(0,name.lastIndexOf("."));
+        return azureStorageServive.uploadFile(nameNew+"."+type,file.getInputStream(),file.getSize(),file.getContentType());
+    }
     @GetMapping("/file")
     public String string(){
         return "phạm thanh son";
