@@ -5,7 +5,6 @@ import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.RestController;
 import vn.edu.iuh.fit.chat_backend.models.Message;
 import vn.edu.iuh.fit.chat_backend.models.MessageFile;
 import vn.edu.iuh.fit.chat_backend.models.MessageText;
@@ -13,7 +12,7 @@ import vn.edu.iuh.fit.chat_backend.models.SendQR;
 import vn.edu.iuh.fit.chat_backend.services.MessageService;
 import vn.edu.iuh.fit.chat_backend.types.MessageType;
 
-@RestController
+@Controller
 public class ChatService {
     @Autowired
     private SimpMessagingTemplate simpMessagingTemplate;
