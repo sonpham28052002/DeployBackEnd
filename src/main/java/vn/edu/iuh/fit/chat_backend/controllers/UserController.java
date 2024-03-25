@@ -42,8 +42,11 @@ public class UserController {
     }
     @PostMapping("/updateUser")
     public User updateUser(@RequestBody User user){
-        user.setConversation(new ArrayList<>());
-        user.setFriendList(new ArrayList<>());
+        Optional<User> user1 = userRepository.findById(user.getId());
+        if (user1.isPresent()){
+            user.setConversation(user1.get().getConversation());
+            user.setFriendList(user1.get().getFriendList());
+        }
         return userRepository.save(user);
     }
 
