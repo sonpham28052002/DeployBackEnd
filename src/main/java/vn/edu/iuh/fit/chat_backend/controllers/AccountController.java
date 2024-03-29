@@ -1,6 +1,5 @@
 package vn.edu.iuh.fit.chat_backend.controllers;
 
-import lombok.Getter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
@@ -9,6 +8,7 @@ import vn.edu.iuh.fit.chat_backend.repositories.AccountRepository;
 import vn.edu.iuh.fit.chat_backend.services.AccountService;
 
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping(value = "/account",produces = MediaType.APPLICATION_JSON_VALUE)
@@ -22,7 +22,15 @@ public class AccountController {
     public boolean updatePasswordAccount(@RequestParam String phone, @RequestParam String passwordOld, @RequestParam String passwordNew) {
         return accountService.updatePasswordAccount(phone, passwordOld, passwordNew);
     }
+    @PutMapping("/forgotPasswordAccount")
+    public boolean forgotPasswordAccount( @RequestParam String id, @RequestParam String passwordNew) {
+        return accountService.forgotPasswordAccount(id, passwordNew);
+    }
 
+    @GetMapping("/getAccountById")
+    public Optional<Account> forgotPasswordAccount(@RequestParam String id) {
+        return accountService.getAccountById(id);
+    }
     @GetMapping("/getAccountPhoneAndPassword")
     public Account getAccountByPhoneAndPassword(@RequestParam String phone, @RequestParam String password) {
         return accountService.getAccountByPhoneAndPassword(phone, password);
