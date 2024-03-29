@@ -2,6 +2,7 @@ package vn.edu.iuh.fit.chat_backend.models;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.*;
+import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.TypeAlias;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -14,10 +15,11 @@ import java.util.Objects;
 @AllArgsConstructor
 @ToString
 public class Friend {
-    private String nickName;
+    @Id
     @JsonIgnoreProperties(value = {"conversation", "friendList","gender","coverImage","bio","phone","logOut"})
     private User user;
     private String tag;
+    private String nickName;
 
     @Override
     public boolean equals(Object o) {

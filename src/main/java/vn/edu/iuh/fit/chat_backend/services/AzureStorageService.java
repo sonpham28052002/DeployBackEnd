@@ -23,7 +23,6 @@ public class AzureStorageService {
     private String container;
 
     private BlobContainerClient containerClient() {
-        System.out.println(container);
         BlobServiceClient serviceClient = new BlobServiceClientBuilder()
                 .connectionString(connection).buildClient();
         return serviceClient.getBlobContainerClient(container);

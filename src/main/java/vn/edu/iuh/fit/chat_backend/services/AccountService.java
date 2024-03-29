@@ -5,6 +5,8 @@ import org.springframework.stereotype.Service;
 import vn.edu.iuh.fit.chat_backend.models.Account;
 import vn.edu.iuh.fit.chat_backend.repositories.AccountRepository;
 
+import java.util.Optional;
+
 @Service
 public class AccountService {
     @Autowired
@@ -26,5 +28,15 @@ public class AccountService {
 
     public Account getAccountByPhone(String phone){
         return accountRepository.getAccountByPhone(phone);
+    }
+
+    public boolean forgotPasswordAccount(String id, String passwordNew) {
+        Optional<Account> account = accountRepository.findById(id);
+        account.get().setPassword(passwordNew);
+        return accountRepository.save(account.get())!=null;
+    }
+
+    public Optional<Account> getAccountById(String id) {
+        return accountRepository.findById(id);
     }
 }

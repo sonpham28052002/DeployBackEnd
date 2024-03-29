@@ -36,9 +36,11 @@ public class MessageService {
             System.out.println("contain");
             int index = conversationList.indexOf(ConversationSingle.builder().user(User.builder().id(receiver.getId()).build()).build());
             Conversation conversation = conversationList.get(index);
+            conversationList.get(index).setUpdateLast(LocalDateTime.now());
             List<Message> messageList = conversation.getMessages();
             messageList.add(message);
             conversation.setMessages(messageList);
+            sender.setConversation(conversationList);
             userRepository.save(sender);
         }
         return true;
@@ -47,7 +49,6 @@ public class MessageService {
     public boolean insertMessageSingleReceiver(Message message) {
 
         User sender = message.getSender();
-        System.out.println(sender);
         User receiver = userRepository.findById(message.getReceiver().getId()).get();
         List<Conversation> conversationList = receiver.getConversation();
         boolean containConversation = conversationList.contains(ConversationSingle.builder().user(User.builder().id(sender.getId()).build()).build());
@@ -64,9 +65,11 @@ public class MessageService {
             System.out.println("contain");
             int index = conversationList.indexOf(ConversationSingle.builder().user(User.builder().id(sender.getId()).build()).build());
             Conversation conversation = conversationList.get(index);
+            conversation.setUpdateLast(LocalDateTime.now());
             List<Message> messageList = conversation.getMessages();
             messageList.add(message);
             conversation.setMessages(messageList);
+            receiver.setConversation(conversationList);
             userRepository.save(receiver);
         }
         return true;
