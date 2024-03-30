@@ -25,11 +25,15 @@ public class ChatService {
             messageService.insertMessageSingleSender(messageFile);
             messageService.insertMessageSingleReceiver(messageFile);
             simpMessagingTemplate.convertAndSendToUser(messageFile.getReceiver().getId()+"", "/singleChat", messageFile);
+            simpMessagingTemplate.convertAndSendToUser(messageFile.getSender().getId()+"", "/singleChat", messageFile);
+
             return messageFile;
         } else {
             messageService.insertMessageSingleSender(messageText);
             messageService.insertMessageSingleReceiver(messageText);
             simpMessagingTemplate.convertAndSendToUser(messageText.getReceiver().getId()+"", "/singleChat", messageText);
+            simpMessagingTemplate.convertAndSendToUser(messageText.getSender().getId()+"", "/singleChat", messageText);
+
             return messageText;
         }
 
