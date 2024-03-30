@@ -36,7 +36,6 @@ public class User {
     private String coverImage;
     private LocalDateTime logOut;
     private List<Conversation> conversation;
-
     private List<Friend> friendList;
 
     @Override
