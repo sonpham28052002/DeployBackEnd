@@ -16,7 +16,7 @@ import java.util.Objects;
 @ToString
 public class Friend {
     @Id
-    @JsonIgnoreProperties(value = {"conversation", "friendList","gender","coverImage","bio","phone","logOut"})
+    @JsonIgnoreProperties(value = {"conversation", "friendList","gender","coverImage","bio","phone","logOut","dob","avt","phone","userName"})
     private User user;
     private String tag;
     private String nickName;

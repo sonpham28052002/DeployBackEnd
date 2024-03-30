@@ -26,16 +26,7 @@ public class UserController {
     public Optional<User> getUserById(@RequestParam String id) {
 
         Optional<User> user = userRepository.findById(id);
-        Collections.sort(user.get().getConversation(), new Comparator<Conversation>() {
-            @Override
-            public int compare(Conversation o1, Conversation o2) {
-                return o2.getUpdateLast().compareTo(o1.getUpdateLast());
-            }
-        });
-        System.out.println("aaaaa");
-        for (Conversation conversation:user.get().getConversation()) {
-            System.out.println(conversation.getUpdateLast() +" "+((ConversationSingle) conversation).getUser().getUserName());
-        }
+
         return user;
     }
 
@@ -46,7 +37,15 @@ public class UserController {
          user.get().setFriendList(null);
         return user;
     }
-
+    @GetMapping("/getInfoUserInGroupById")
+    public List<User> getInfoUserInGroupById(@RequestBody List<User> idUsersGroup) {
+        List<User> userList = new ArrayList<>();
+        for (User user:idUsersGroup) {
+            User rs = userRepository.findById(user.getId()).get();
+            userList.add(User.builder().id(rs.getId()).avt(rs.getAvt()).userName(rs.getUserName()).build());
+        }
+        return userList;
+    }
     @PostMapping("/insertUser")
     public User insertUser(@RequestBody User user){
         user.setConversation(new ArrayList<>());
