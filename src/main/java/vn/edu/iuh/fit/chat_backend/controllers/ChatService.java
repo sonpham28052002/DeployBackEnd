@@ -12,6 +12,8 @@ import vn.edu.iuh.fit.chat_backend.models.SendQR;
 import vn.edu.iuh.fit.chat_backend.services.MessageService;
 import vn.edu.iuh.fit.chat_backend.types.MessageType;
 
+import java.time.LocalDateTime;
+
 @Controller
 public class ChatService {
     @Autowired
@@ -22,6 +24,7 @@ public class ChatService {
     @MessageMapping("/private-single-message")
     public Message recMessageTextSingle(@Payload MessageText messageText, @Payload MessageFile messageFile) {
         if (messageText.getContent() == null) {
+            messageFile.setSenderDate(LocalDateTime.now());
             messageService.insertMessageSingleSender(messageFile);
             messageService.insertMessageSingleReceiver(messageFile);
             simpMessagingTemplate.convertAndSendToUser(messageFile.getReceiver().getId()+"", "/singleChat", messageFile);
@@ -29,6 +32,7 @@ public class ChatService {
 
             return messageFile;
         } else {
+            messageText.setSenderDate(LocalDateTime.now());
             messageService.insertMessageSingleSender(messageText);
             messageService.insertMessageSingleReceiver(messageText);
             simpMessagingTemplate.convertAndSendToUser(messageText.getReceiver().getId()+"", "/singleChat", messageText);

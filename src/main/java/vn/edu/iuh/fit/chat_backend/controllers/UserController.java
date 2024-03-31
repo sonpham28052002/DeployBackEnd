@@ -1,6 +1,7 @@
 package vn.edu.iuh.fit.chat_backend.controllers;
 
 import com.azure.core.annotation.Put;
+import net.datafaker.Faker;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
@@ -12,7 +13,7 @@ import vn.edu.iuh.fit.chat_backend.repositories.UserRepository;
 import java.util.*;
 
 @RestController
-@RequestMapping(value = "/users",produces = MediaType.APPLICATION_JSON_VALUE)
+@RequestMapping(value = "/users", produces = MediaType.APPLICATION_JSON_VALUE)
 public class UserController {
     @Autowired
     private UserRepository userRepository;
@@ -32,35 +33,47 @@ public class UserController {
 
     @GetMapping("/getInfoUserById")
     public Optional<User> getInfoUserById(@RequestParam String id) {
-         Optional<User> user= userRepository.findById(id);
-         user.get().setConversation(null);
-         user.get().setFriendList(null);
+        Optional<User> user = userRepository.findById(id);
+        user.get().setConversation(null);
+        user.get().setFriendList(null);
         return user;
     }
+
     @GetMapping("/getInfoUserInGroupById")
     public List<User> getInfoUserInGroupById(@RequestBody List<User> idUsersGroup) {
         List<User> userList = new ArrayList<>();
-        for (User user:idUsersGroup) {
+        for (User user : idUsersGroup) {
             User rs = userRepository.findById(user.getId()).get();
             userList.add(User.builder().id(rs.getId()).avt(rs.getAvt()).userName(rs.getUserName()).build());
         }
         return userList;
     }
+
     @PostMapping("/insertUser")
-    public User insertUser(@RequestBody User user){
+    public User insertUser(@RequestBody User user) {
+        Faker faker = new Faker();
+        user.setAvt(faker.avatar().image());
+        user.setCoverImage(faker.internet().image());
         user.setConversation(new ArrayList<>());
         user.setFriendList(new ArrayList<>());
         return userRepository.save(user);
     }
 
-    @PostMapping("/insertUsers")
-    public User insertUsers(@RequestBody User user){
-        return userRepository.save(user);
+    @DeleteMapping("/deleteUserById")
+    public boolean deleteUserById(@RequestParam String id) {
+        try {
+            userRepository.deleteById(id);
+            return true;
+        } catch (Exception exception) {
+            exception.printStackTrace();
+        }
+        return false;
     }
+
     @PutMapping("/updateUser")
-    public User updateUser(@RequestBody User user){
+    public User updateUser(@RequestBody User user) {
         Optional<User> user1 = userRepository.findById(user.getId());
-        if (user1.isPresent()){
+        if (user1.isPresent()) {
             user.setConversation(user1.get().getConversation());
             user.setFriendList(user1.get().getFriendList());
         }

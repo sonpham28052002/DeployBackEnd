@@ -33,7 +33,6 @@ class ChatBackEndApplicationTests {
     void insertCon() {
         Faker faker = new Faker();
 
-
         // lấy user sonpham
         User sonpham = userRepository.findById("jgfqCBTFdEgDmpHHXaNHdZV8B982").get();
         // lấy user cường
@@ -149,4 +148,31 @@ class ChatBackEndApplicationTests {
 
     }
 
+    @Test
+    void aa(){
+        User leon = userRepository.findById("yGjQT5o0sleSmjHVDHT24SS8FAB2").get();
+        User sonpham = userRepository.findById("jgfqCBTFdEgDmpHHXaNHdZV8B982").get();
+        List<Message> messageList = new ArrayList<>();
+        for (Conversation conversation:sonpham.getConversation()) {
+            if (conversation instanceof ConversationSingle){
+              if ( ((ConversationSingle) conversation).getUser().equals(User.builder().id(leon.getId()).build()) ){
+                  messageList.addAll(conversation.getMessages());
+              }
+            }
+        }
+        ConversationSingle conversationSingleLeon = new ConversationSingle();
+        conversationSingleLeon.setMessages(messageList);
+        conversationSingleLeon.setConversationType(ConversationType.single);
+        conversationSingleLeon.setUser(User.builder().id(sonpham.getId()).build());
+        conversationSingleLeon.setUpdateLast(LocalDateTime.now());
+        leon.setConversation(List.of(conversationSingleLeon));
+        userRepository.save(leon);
+
+    }
+
+    @Test
+    void test(){
+        Faker faker = new Faker();
+        System.out.println(faker.avatar().image());
+    }
 }
