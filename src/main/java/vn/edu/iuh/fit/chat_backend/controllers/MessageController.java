@@ -69,4 +69,33 @@ public class MessageController {
         messageFile.setUrl(dto.getUrl());
         return messageRepository.save(messageFile);
     }
+
+    @DeleteMapping("/deleteMessageById")
+    public boolean deleteUserById(@RequestParam String id) {
+        // Xoá tin nhắn 2 bên
+        try {
+            messageRepository.deleteById(id);
+            return true;
+        } catch (Exception exception) {
+            exception.printStackTrace();
+        }
+        return false;
+    }
+
+    @PutMapping("/deleteMessage")
+    public boolean deleteMessage(@RequestParam String id, @RequestParam String userDo) {
+        // Xoá tin nhắn 1 bên
+        try {
+            Message mess = messageRepository.findById(id).get();
+            if(mess.getSender().getId().equals(userDo))
+                mess.setSender(null);
+            else
+                mess.setReceiver(null);
+            messageRepository.save(mess);
+            return true;
+        } catch (Exception exception) {
+            exception.printStackTrace();
+        }
+        return false;
+    }
 }
