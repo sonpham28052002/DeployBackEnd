@@ -11,7 +11,6 @@ import vn.edu.iuh.fit.chat_backend.models.ConversationSingle;
 import vn.edu.iuh.fit.chat_backend.models.Message;
 import vn.edu.iuh.fit.chat_backend.models.User;
 import vn.edu.iuh.fit.chat_backend.repositories.UserRepository;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -19,11 +18,8 @@ import java.util.Optional;
 @RestController
 @RequestMapping(value = "/messages", produces = MediaType.APPLICATION_JSON_VALUE)
 public class MessageController {
-
     @Autowired
     private UserRepository userRepository;
-
-
 
     @GetMapping("/getMessageByIdSenderAndIsReceiver")
     public List<Message> getMessageByIdSenderAndIsReceiver(@RequestParam String idSender, @RequestParam String idReceiver) {
@@ -32,7 +28,7 @@ public class MessageController {
         Optional<User> receiver = userRepository.findById(idReceiver);
         System.out.println(receiver);
 
-        if (sender.isEmpty() || receiver.isEmpty()){
+        if (sender.isEmpty() || receiver.isEmpty()) {
             return new ArrayList<>();
         }
         for (Conversation conversation : sender.get().getConversation()) {
@@ -44,4 +40,5 @@ public class MessageController {
         }
         return new ArrayList<>();
     }
+
 }
