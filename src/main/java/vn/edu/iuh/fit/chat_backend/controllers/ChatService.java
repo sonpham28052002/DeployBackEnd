@@ -37,7 +37,6 @@ public class ChatService {
             messageService.insertMessageSingleReceiver(messageText);
             simpMessagingTemplate.convertAndSendToUser(messageText.getReceiver().getId()+"", "/singleChat", messageText);
             simpMessagingTemplate.convertAndSendToUser(messageText.getSender().getId()+"", "/singleChat", messageText);
-
             return messageText;
         }
 
