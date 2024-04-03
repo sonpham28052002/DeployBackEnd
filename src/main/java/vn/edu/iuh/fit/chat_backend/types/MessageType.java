@@ -18,8 +18,8 @@ public enum MessageType {
     RAR("application/vnd.rar"),
     ZIP("application/zip"),
     Text("text/content"),
-    STICKER("image/sticker");
-
+    STICKER("image/sticker"),
+    RETRIEVE("RETRIEVE");
     private final String MessageType;
 
     MessageType(String type) {

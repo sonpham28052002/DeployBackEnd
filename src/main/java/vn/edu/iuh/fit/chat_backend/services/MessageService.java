@@ -7,9 +7,12 @@ import vn.edu.iuh.fit.chat_backend.models.ConversationSingle;
 import vn.edu.iuh.fit.chat_backend.models.Message;
 import vn.edu.iuh.fit.chat_backend.models.User;
 import vn.edu.iuh.fit.chat_backend.repositories.UserRepository;
+import vn.edu.iuh.fit.chat_backend.types.ConversationType;
+import vn.edu.iuh.fit.chat_backend.types.MessageType;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class MessageService {
@@ -27,6 +30,7 @@ public class MessageService {
             System.out.println("not contain");
             ConversationSingle conversationSingle = new ConversationSingle();
             conversationSingle.setUser(receiver);
+            conversationSingle.setConversationType(ConversationType.single);
             conversationSingle.setUpdateLast(LocalDateTime.now());
             conversationSingle.setMessages(List.of(message));
             conversationSingle.setLastMessage();
@@ -46,6 +50,21 @@ public class MessageService {
             userRepository.save(sender);
         }
         return true;
+    }
+
+    public Message retrieveMessageSingle(Message message){
+        Optional<User> userReceiver = userRepository.findById(message.getReceiver().getId());
+        Optional<User> userSender= userRepository.findById(message.getSender().getId());
+        message.setMessageType(MessageType.RETRIEVE);
+        // update message list receiver
+        userReceiver.get().getConversation();
+
+        return message;
+    }
+
+    public boolean deleteMessage(Message message){
+
+        return false;
     }
 
     public boolean insertMessageSingleReceiver(Message message) {

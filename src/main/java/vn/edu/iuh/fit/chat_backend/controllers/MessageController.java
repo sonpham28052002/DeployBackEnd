@@ -24,10 +24,7 @@ public class MessageController {
     @GetMapping("/getMessageByIdSenderAndIsReceiver")
     public List<Message> getMessageByIdSenderAndIsReceiver(@RequestParam String idSender, @RequestParam String idReceiver) {
         Optional<User> sender = userRepository.findById(idSender);
-        System.out.println(sender);
         Optional<User> receiver = userRepository.findById(idReceiver);
-        System.out.println(receiver);
-
         if (sender.isEmpty() || receiver.isEmpty()) {
             return new ArrayList<>();
         }
