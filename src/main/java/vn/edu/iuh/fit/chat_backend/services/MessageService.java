@@ -29,6 +29,7 @@ public class MessageService {
             conversationSingle.setUser(receiver);
             conversationSingle.setUpdateLast(LocalDateTime.now());
             conversationSingle.setMessages(List.of(message));
+            conversationSingle.setLastMessage();
             conversationList.add(conversationSingle);
             sender.setConversation(conversationList);
             userRepository.save(sender);
@@ -40,6 +41,7 @@ public class MessageService {
             List<Message> messageList = conversation.getMessages();
             messageList.add(message);
             conversation.setMessages(messageList);
+            conversation.setLastMessage();
             sender.setConversation(conversationList);
             userRepository.save(sender);
         }
@@ -58,6 +60,7 @@ public class MessageService {
             conversationSingle.setUser(sender);
             conversationSingle.setUpdateLast(LocalDateTime.now());
             conversationSingle.setMessages(List.of(message));
+            conversationSingle.setLastMessage();
             conversationList.add(conversationSingle);
             receiver.setConversation(conversationList);
             userRepository.save(receiver);
@@ -69,6 +72,7 @@ public class MessageService {
             List<Message> messageList = conversation.getMessages();
             messageList.add(message);
             conversation.setMessages(messageList);
+            conversation.setLastMessage();
             receiver.setConversation(conversationList);
             userRepository.save(receiver);
         }

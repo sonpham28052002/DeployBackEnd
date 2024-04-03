@@ -7,6 +7,7 @@ import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import vn.edu.iuh.fit.chat_backend.models.Conversation;
 import vn.edu.iuh.fit.chat_backend.models.ConversationSingle;
+import vn.edu.iuh.fit.chat_backend.models.Message;
 import vn.edu.iuh.fit.chat_backend.models.User;
 import vn.edu.iuh.fit.chat_backend.repositories.UserRepository;
 
@@ -48,6 +49,21 @@ public class UserController {
         }
         return userList;
     }
+
+    @GetMapping("/getMessageByIdSenderAndIsReceiver")
+    public List<Message> getMessageByIdSenderAndIsReceiver(@RequestParam String idSender, @RequestParam String idReceiver) {
+        User sender = userRepository.findById(idSender).get();
+        User receiver = userRepository.findById(idReceiver).get();
+        for (Conversation conversation : sender.getConversation()) {
+            if (conversation instanceof ConversationSingle) {
+                if (((ConversationSingle) conversation).getUser().equals(receiver)) {
+                    return conversation.getMessages();
+                }
+            }
+        }
+        return null;
+    }
+
 
     @PostMapping("/insertUser")
     public User insertUser(@RequestBody User user) {

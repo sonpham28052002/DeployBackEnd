@@ -3,6 +3,8 @@ package vn.edu.iuh.fit.chat_backend;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import vn.edu.iuh.fit.chat_backend.convert.AES;
+import vn.edu.iuh.fit.chat_backend.convert.Encryption;
 import vn.edu.iuh.fit.chat_backend.models.*;
 import vn.edu.iuh.fit.chat_backend.repositories.AccountRepository;
 import vn.edu.iuh.fit.chat_backend.repositories.UserRepository;
@@ -71,7 +73,7 @@ class ChatBackEndApplicationTests {
         conversationGroup.setMessages(messageListGroup);
         conversationGroup.setMembers(List.of(User.builder().id(sonpham.getId()).build(), User.builder().id(cuong.getId()).build(),User.builder().id(leon.getId()).build()));
         conversationGroup.setUpdateLast(LocalDateTime.now());
-
+        conversationGroup.setLastMessage();
         System.out.println(conversationGroup.getMessages());
 
 
@@ -98,7 +100,7 @@ class ChatBackEndApplicationTests {
         conversationSingleCuong.setConversationType(ConversationType.single);
         conversationSingleCuong.setUser(User.builder().id(sonpham.getId()).build());
         conversationSingleCuong.setUpdateLast(LocalDateTime.now());
-
+        conversationSingleCuong.setLastMessage();
         conversationsCuong.add(conversationSingleCuong);
         conversationsCuong.add(conversationGroup);
         cuong.setConversation(conversationsCuong);
@@ -110,7 +112,7 @@ class ChatBackEndApplicationTests {
         conversationSingleSon.setConversationType(ConversationType.single);
         conversationSingleSon.setUser(User.builder().id(cuong.getId()).build());
         conversationSingleSon.setUpdateLast(LocalDateTime.now());
-
+        conversationSingleSon.setLastMessage();
         conversationsSon.add(conversationSingleSon);
 
         for (int i = 0; i < 3; i++) {
@@ -134,6 +136,7 @@ class ChatBackEndApplicationTests {
         conversationSingleSonLeon.setConversationType(ConversationType.single);
         conversationSingleSonLeon.setUser(User.builder().id(leon.getId()).build());
         conversationSingleSonLeon.setUpdateLast(LocalDateTime.now());
+        conversationSingleSonLeon.setLastMessage();
         conversationsLeon.add(conversationSingleSonLeon);
         conversationsLeon.add(conversationGroup);
         leon.setConversation(conversationsLeon);
@@ -162,6 +165,7 @@ class ChatBackEndApplicationTests {
         }
         ConversationSingle conversationSingleLeon = new ConversationSingle();
         conversationSingleLeon.setMessages(messageList);
+        conversationSingleLeon.setLastMessage();
         conversationSingleLeon.setConversationType(ConversationType.single);
         conversationSingleLeon.setUser(User.builder().id(sonpham.getId()).build());
         conversationSingleLeon.setUpdateLast(LocalDateTime.now());
@@ -173,6 +177,50 @@ class ChatBackEndApplicationTests {
     @Test
     void test(){
         Faker faker = new Faker();
-        System.out.println(faker.avatar().image());
+        User sonpham = userRepository.findById("jgfqCBTFdEgDmpHHXaNHdZV8B982").get();
+        User sonnguyen = userRepository.findById("RGpCgF0lR1aGVcttckhAbBHWcSp2").get();
+        List<Message> messageList = new ArrayList<>();
+        for (int i = 0; i < 10; i++) {
+            MessageText messageText = new MessageText();
+            messageText.setMessageType(MessageType.Text);
+            messageText.setContent(faker.text().text());
+            messageText.setId(UUID.randomUUID().toString());
+            messageText.setSeen(List.of(User.builder().id(sonpham.getId()).build(), User.builder().id(sonnguyen.getId()).build()));
+            if (i % 2 == 0) {
+                messageText.setReceiver(User.builder().id(sonpham.getId()).build());
+                messageText.setSender(User.builder().id(sonnguyen.getId()).build());
+            } else {
+                messageText.setReceiver(User.builder().id(sonnguyen.getId()).build());
+                messageText.setSender(User.builder().id(sonpham.getId()).build());
+            }
+            messageText.setSenderDate(LocalDateTime.now());
+            messageList.add(messageText);
+        }
+        // danh sách trò chuyện của sơn nguyễn
+        List<Conversation> conversationsnguyen = new ArrayList<>();
+        //  trò chuyện của sơn nguyễn - sonpham
+        ConversationSingle conversationSingleSonLeon = new ConversationSingle();
+        conversationSingleSonLeon.setMessages(messageList);
+        conversationSingleSonLeon.setConversationType(ConversationType.single);
+        conversationSingleSonLeon.setUser(User.builder().id(sonpham.getId()).build());
+        conversationSingleSonLeon.setUpdateLast(LocalDateTime.now());
+        conversationSingleSonLeon.setLastMessage();
+        conversationsnguyen.add(conversationSingleSonLeon);
+        sonnguyen.setConversation(conversationsnguyen);
+
+
+        //  trò chuyện của sonpham - sơn nguyễn
+
+        List<Conversation> conversationspham = sonpham.getConversation();
+        ConversationSingle conversationSingleSon = new ConversationSingle();
+        conversationSingleSon.setMessages(messageList);
+        conversationSingleSon.setConversationType(ConversationType.single);
+        conversationSingleSon.setUser(User.builder().id(sonnguyen.getId()).build());
+        conversationSingleSon.setUpdateLast(LocalDateTime.now());
+        conversationSingleSon.setLastMessage();
+        conversationspham.add(conversationSingleSon);
+        sonpham.setConversation(conversationspham);
+        userRepository.save(sonnguyen);
+        userRepository.save(sonpham);
     }
 }

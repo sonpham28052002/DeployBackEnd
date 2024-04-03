@@ -1,18 +1,16 @@
 package vn.edu.iuh.fit.chat_backend.controllers;
 
-import net.datafaker.Faker;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.*;
-import vn.edu.iuh.fit.chat_backend.dtos.MessageDto;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+import vn.edu.iuh.fit.chat_backend.models.Conversation;
+import vn.edu.iuh.fit.chat_backend.models.ConversationSingle;
 import vn.edu.iuh.fit.chat_backend.models.Message;
-import vn.edu.iuh.fit.chat_backend.models.MessageFile;
-import vn.edu.iuh.fit.chat_backend.models.MessageText;
 import vn.edu.iuh.fit.chat_backend.models.User;
-import vn.edu.iuh.fit.chat_backend.repositories.MessageRepository;
 import vn.edu.iuh.fit.chat_backend.repositories.UserRepository;
-import vn.edu.iuh.fit.chat_backend.types.MessageType;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -21,81 +19,26 @@ import java.util.Optional;
 @RequestMapping(value = "/messages", produces = MediaType.APPLICATION_JSON_VALUE)
 public class MessageController {
     @Autowired
-    private MessageRepository messageRepository;
-    @Autowired
     private UserRepository userRepository;
 
-    @GetMapping("/all")
-    public List<Message> getAll() {
-        return messageRepository.findAll();
-    }
+    @GetMapping("/getMessageByIdSenderAndIsReceiver")
+    public List<Message> getMessageByIdSenderAndIsReceiver(@RequestParam String idSender, @RequestParam String idReceiver) {
+        Optional<User> sender = userRepository.findById(idSender);
+        System.out.println(sender);
+        Optional<User> receiver = userRepository.findById(idReceiver);
+        System.out.println(receiver);
 
-    @GetMapping("/getMessageById")
-    public Optional<Message> getMessageById(@RequestParam String id) {
-
-        Optional<Message> message = messageRepository.findById(id);
-
-        return message;
-    }
-
-    @GetMapping("/getMessageBySender")
-    public List<Message> getMessageBySender(@RequestParam String id) {
-
-        List<Message> messagesBySender = messageRepository.findAllBySender(userRepository.findById(id).get());
-
-        return messagesBySender;
-    }
-
-    @PostMapping("/insertMessage")
-    public Message insertUser(@RequestBody MessageDto dto) {
-        User sender = userRepository.findById(dto.getSender().getId()).get();
-        User receiver = userRepository.findById(dto.getReceiver().getId()).get();
-        if(dto.getContent() != null){ // text
-            MessageText messageText = new MessageText();
-            messageText.setId(dto.getId());
-            messageText.setMessageType(dto.getMessageType());
-            messageText.setSender(sender);
-            messageText.setReceiver(receiver);
-            messageText.setContent(dto.getContent());
-            return messageRepository.save(messageText);
+        if (sender.isEmpty() || receiver.isEmpty()) {
+            return new ArrayList<>();
         }
-        MessageFile messageFile = new MessageFile();
-        messageFile.setId(dto.getId());
-        messageFile.setMessageType(dto.getMessageType());
-        messageFile.setSender(sender);
-        messageFile.setReceiver(receiver);
-        messageFile.setSize(dto.getSize());
-        messageFile.setTitleFile(dto.getTitleFile());
-        messageFile.setUrl(dto.getUrl());
-        return messageRepository.save(messageFile);
+        for (Conversation conversation : sender.get().getConversation()) {
+            if (conversation instanceof ConversationSingle) {
+                if (((ConversationSingle) conversation).getUser().equals(receiver.get())) {
+                    return conversation.getMessages();
+                }
+            }
+        }
+        return new ArrayList<>();
     }
 
-    @DeleteMapping("/deleteMessageById")
-    public boolean deleteUserById(@RequestParam String id) {
-        // Xoá tin nhắn 2 bên
-        try {
-            messageRepository.deleteById(id);
-            return true;
-        } catch (Exception exception) {
-            exception.printStackTrace();
-        }
-        return false;
-    }
-
-    @PutMapping("/deleteMessage")
-    public boolean deleteMessage(@RequestParam String id, @RequestParam String userDo) {
-        // Xoá tin nhắn 1 bên
-        try {
-            Message mess = messageRepository.findById(id).get();
-            if(mess.getSender().getId().equals(userDo))
-                mess.setSender(null);
-            else
-                mess.setReceiver(null);
-            messageRepository.save(mess);
-            return true;
-        } catch (Exception exception) {
-            exception.printStackTrace();
-        }
-        return false;
-    }
 }

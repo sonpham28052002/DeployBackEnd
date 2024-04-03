@@ -17,13 +17,15 @@ import java.util.Objects;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class ConversationGroup extends Conversation{
+public class ConversationGroup extends Conversation {
     private String idGroup;
-    @JsonIgnoreProperties(value = {"conversation", "friendList","gender","coverImage","bio","phone","logOut","dob","avt","phone","userName"})
+    @JsonIgnoreProperties(value = {"conversation", "friendList", "gender", "coverImage", "bio", "phone", "logOut", "dob", "avt", "phone", "userName"})
     private List<User> members;
     private String avtGroup;
     private String nameGroup;
-//    private User leaderTeam;
+
+    //    private User leaderTeam;
+//    @JsonIgnoreProperties(value = {"conversation", "friendList", "gender", "coverImage", "bio", "phone", "logOut", "dob", "avt", "phone", "userName"})
 //    private List<User> subTeamList;
 
     @Override
