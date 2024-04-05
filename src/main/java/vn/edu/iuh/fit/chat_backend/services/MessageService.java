@@ -34,6 +34,7 @@ public class MessageService {
             conversationSingle.setUpdateLast(LocalDateTime.now());
             conversationSingle.setMessages(List.of(message));
             conversationSingle.setLastMessage();
+            conversationSingle.setUpdateLast(LocalDateTime.now());
             conversationList.add(conversationSingle);
             sender.setConversation(conversationList);
             userRepository.save(sender);
@@ -46,6 +47,7 @@ public class MessageService {
             messageList.add(message);
             conversation.setMessages(messageList);
             conversation.setLastMessage();
+            conversation.setUpdateLast(LocalDateTime.now());
             sender.setConversation(conversationList);
             userRepository.save(sender);
         }
@@ -66,6 +68,7 @@ public class MessageService {
                     message1.setMessageType(MessageType.RETRIEVE);
                     messageList.set(messageList.indexOf(message),message1);
                     conversation.setLastMessage();
+                    conversation.setUpdateLast(LocalDateTime.now());
                     userRepository.save(userReceiver.get());
                 }
             }
@@ -80,6 +83,7 @@ public class MessageService {
                     message1.setMessageType(MessageType.RETRIEVE);
                     messageList.set(messageList.indexOf(message),message1);
                     conversation.setLastMessage();
+                    conversation.setUpdateLast(LocalDateTime.now());
                     userRepository.save(userSender.get());
                 }
             }
