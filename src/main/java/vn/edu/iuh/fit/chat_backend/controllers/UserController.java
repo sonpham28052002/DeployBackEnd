@@ -26,9 +26,14 @@ public class UserController {
 
     @GetMapping("/getUserById")
     public Optional<User> getUserById(@RequestParam String id) {
-
         Optional<User> user = userRepository.findById(id);
-
+        for (Conversation conversation:user.get().getConversation()) {
+            if (conversation instanceof ConversationSingle){
+                String idUserConversation = ((ConversationSingle) conversation).getUser().getId();
+                User userConversation =userRepository.findById(idUserConversation).get();
+                ((ConversationSingle) conversation).setUser(userConversation);
+            }
+        }
         return user;
     }
 

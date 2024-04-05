@@ -16,7 +16,7 @@ import java.util.Objects;
 @AllArgsConstructor
 @Builder
 public class ConversationSingle extends Conversation{
-    @JsonIgnoreProperties(value = {"conversation", "friendList","gender","coverImage","bio","phone","logOut","dob","avt","phone","userName"})
+    @JsonIgnoreProperties(value = {"conversation", "friendList","gender","coverImage","bio","phone","logOut","dob","phone"})
     private User user;
 
     @Override
