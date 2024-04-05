@@ -10,7 +10,10 @@ import com.azure.storage.blob.models.BlobHttpHeaders;
 import com.azure.storage.blob.options.BlobParallelUploadOptions;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 
 @Service
@@ -31,7 +34,7 @@ public class AzureStorageService {
     public String uploadFile(String fileName, InputStream inputStream, long length, String type) {
         BlobClient client = containerClient().getBlobClient(fileName);
         BlobHttpHeaders headers = new BlobHttpHeaders().setContentType(type);
-        BlobParallelUploadOptions options = new BlobParallelUploadOptions(inputStream,length)
+        BlobParallelUploadOptions options = new BlobParallelUploadOptions(inputStream, length)
                 .setHeaders(headers);
         client.uploadWithResponse(options, null, Context.NONE);
         return client.getBlobUrl();

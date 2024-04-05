@@ -2,6 +2,7 @@ package vn.edu.iuh.fit.chat_backend.controllers;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
+import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.web.bind.annotation.*;
 import vn.edu.iuh.fit.chat_backend.models.Conversation;
 import vn.edu.iuh.fit.chat_backend.models.ConversationSingle;
@@ -39,9 +40,6 @@ public class MessageController {
         }
         return new ArrayList<>();
     }
-    @DeleteMapping("/deleteMessageByIdOrGroupId")
-    public boolean deleteUserById(@RequestBody Message message, @RequestParam String idGroup) {
-        return messageService.deleteMessage(message,idGroup);
-    }
+
 
 }

@@ -34,6 +34,7 @@ public class MessageService {
             conversationSingle.setUpdateLast(LocalDateTime.now());
             conversationSingle.setMessages(List.of(message));
             conversationSingle.setLastMessage();
+            conversationSingle.setUpdateLast(LocalDateTime.now());
             conversationList.add(conversationSingle);
             sender.setConversation(conversationList);
             userRepository.save(sender);
@@ -46,6 +47,7 @@ public class MessageService {
             messageList.add(message);
             conversation.setMessages(messageList);
             conversation.setLastMessage();
+            conversation.setUpdateLast(LocalDateTime.now());
             sender.setConversation(conversationList);
             userRepository.save(sender);
         }
@@ -66,6 +68,7 @@ public class MessageService {
                     message1.setMessageType(MessageType.RETRIEVE);
                     messageList.set(messageList.indexOf(message),message1);
                     conversation.setLastMessage();
+                    conversation.setUpdateLast(LocalDateTime.now());
                     userRepository.save(userReceiver.get());
                 }
             }
@@ -80,6 +83,7 @@ public class MessageService {
                     message1.setMessageType(MessageType.RETRIEVE);
                     messageList.set(messageList.indexOf(message),message1);
                     conversation.setLastMessage();
+                    conversation.setUpdateLast(LocalDateTime.now());
                     userRepository.save(userSender.get());
                 }
             }
@@ -88,29 +92,32 @@ public class MessageService {
         return message;
     }
 
-    public boolean deleteMessage(Message message,String idGroup){
-        System.out.println(message);
-        System.out.println(idGroup.trim().equals(""));
+    public boolean deleteMessageSingle(Message message, String ownerID){
+        Optional<User> user = userRepository.findById(ownerID);
+        List<Conversation> conversations = user.get().getConversation();
         try {
-            Optional<User> user = userRepository.findById(message.getSender().getId());
-            List<Conversation> conversations = user.get().getConversation();
-            if (idGroup.trim().equals("")){
-
+            if ("idGroup".trim().equals("")){
             }else {
+                User userMember = null;
+                if (user.get().getId().equals(message.getSender().getId())){
+                    userMember = userRepository.findById(message.getReceiver().getId()).get();
+                }else {
+                    System.out.println(message.getSender().getId());
+                    userMember = userRepository.findById(message.getSender().getId()).get();
+                }
                 for (Conversation conversation:conversations) {
                     if (conversation instanceof ConversationSingle){
-                        if (((ConversationSingle) conversation).getUser().equals(User.builder().id(message.getReceiver().getId()).build())){
+                        if (((ConversationSingle) conversation).getUser().equals(userMember)){
                             List<Message> messageList = conversation.getMessages();
-                            messageList.remove(message);
-                            conversation.setMessages(messageList);
+                            System.out.println(messageList.indexOf(message));
+                            messageList.remove(messageList.indexOf(message));
                             conversation.setLastMessage();
                             userRepository.save(user.get());
-                            break;
+                            return true;
                         }
                     }
                 }
             }
-            return true;
         } catch (Exception exception) {
             exception.printStackTrace();
         }
