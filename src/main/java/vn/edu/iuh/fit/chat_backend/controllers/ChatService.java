@@ -1,5 +1,8 @@
 package vn.edu.iuh.fit.chat_backend.controllers;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
@@ -22,47 +25,71 @@ public class ChatService {
     private MessageService messageService;
 
     @MessageMapping("/react-message")
-    public String reactMessage(@Payload MessageText messageText, @Payload MessageFile messageFile){
+    public String reactMessage(@Payload MessageText messageText, @Payload MessageFile messageFile) {
         if (messageText.getContent() == null) {
             System.out.println(messageFile.getReact());
-            simpMessagingTemplate.convertAndSendToUser(messageFile.getId(), "react-message",messageFile.getReact());
-        }else {
+            simpMessagingTemplate.convertAndSendToUser(messageFile.getId(), "react-message", messageFile.getReact());
+        } else {
             System.out.println(messageText.getReact());
         }
         return "";
     }
 
     @MessageMapping("/retrieve-message")
-    public String retrieveMessage(@Payload MessageText messageText, @Payload MessageFile messageFile){
+    public String retrieveMessage(@Payload MessageText messageText, @Payload MessageFile messageFile) {
         if (messageText.getContent() == null) {
             System.out.println(messageFile);
-            Message messageNew =messageService.retrieveMessageSingle(messageFile);
-            simpMessagingTemplate.convertAndSendToUser(messageFile.getReceiver().getId(), "/retrieveMessage",messageNew);
-            simpMessagingTemplate.convertAndSendToUser(messageFile.getSender().getId(), "/retrieveMessage",messageNew);
-        }else {
+            Message messageNew = messageService.retrieveMessageSingle(messageFile);
+            simpMessagingTemplate.convertAndSendToUser(messageFile.getReceiver().getId(), "/retrieveMessage", messageNew);
+            simpMessagingTemplate.convertAndSendToUser(messageFile.getSender().getId(), "/retrieveMessage", messageNew);
+        } else {
             System.out.println(messageText);
-             Message messageNew =messageService.retrieveMessageSingle(messageText);
-            simpMessagingTemplate.convertAndSendToUser(messageText.getReceiver().getId(), "/retrieveMessage",messageNew);
-            simpMessagingTemplate.convertAndSendToUser(messageText.getSender().getId(), "/retrieveMessage",messageNew);
+            Message messageNew = messageService.retrieveMessageSingle(messageText);
+            simpMessagingTemplate.convertAndSendToUser(messageText.getReceiver().getId(), "/retrieveMessage", messageNew);
+            simpMessagingTemplate.convertAndSendToUser(messageText.getSender().getId(), "/retrieveMessage", messageNew);
         }
         return "";
     }
+
+    @MessageMapping("/delete-message")
+    public String deleteMessage(@Payload MessageText messageText, @Payload MessageFile messageFile, @Payload String idGroup) throws JsonProcessingException {
+        System.out.println(messageFile.getSize());
+        System.out.println(messageText.getContent());
+        ObjectMapper mapper = new ObjectMapper();
+        JsonNode rootNode = mapper.readTree(idGroup);
+        String Group = rootNode.get("idGroup").asText();
+        String ownerId = rootNode.get("ownerId").asText();
+        if (Group.equals("")) {
+            if (messageText.getContent() == null) {
+                System.out.println(messageFile);
+                messageService.deleteMessageSingle(messageFile, ownerId);
+                simpMessagingTemplate.convertAndSendToUser(ownerId, "/deleteMessage", messageFile);
+            } else {
+                System.out.println(messageText.getReceiver());
+                messageService.deleteMessageSingle(messageText, ownerId);
+                simpMessagingTemplate.convertAndSendToUser(ownerId, "/deleteMessage", messageText);
+            }
+        } else {
+        }
+        return "";
+    }
+
     @MessageMapping("/private-single-message")
     public Message recMessageTextSingle(@Payload MessageText messageText, @Payload MessageFile messageFile) {
         if (messageText.getContent() == null) {
             messageFile.setSenderDate(LocalDateTime.now());
             messageService.insertMessageSingleSender(messageFile);
             messageService.insertMessageSingleReceiver(messageFile);
-            simpMessagingTemplate.convertAndSendToUser(messageFile.getReceiver().getId()+"", "/singleChat", messageFile);
-            simpMessagingTemplate.convertAndSendToUser(messageFile.getSender().getId()+"", "/singleChat", messageFile);
+            simpMessagingTemplate.convertAndSendToUser(messageFile.getReceiver().getId() + "", "/singleChat", messageFile);
+            simpMessagingTemplate.convertAndSendToUser(messageFile.getSender().getId() + "", "/singleChat", messageFile);
 
             return messageFile;
         } else {
             messageText.setSenderDate(LocalDateTime.now());
             messageService.insertMessageSingleSender(messageText);
             messageService.insertMessageSingleReceiver(messageText);
-            simpMessagingTemplate.convertAndSendToUser(messageText.getReceiver().getId()+"", "/singleChat", messageText);
-            simpMessagingTemplate.convertAndSendToUser(messageText.getSender().getId()+"", "/singleChat", messageText);
+            simpMessagingTemplate.convertAndSendToUser(messageText.getReceiver().getId() + "", "/singleChat", messageText);
+            simpMessagingTemplate.convertAndSendToUser(messageText.getSender().getId() + "", "/singleChat", messageText);
             return messageText;
         }
 
