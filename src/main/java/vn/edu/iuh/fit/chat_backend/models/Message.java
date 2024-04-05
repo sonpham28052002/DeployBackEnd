@@ -23,8 +23,6 @@ import java.util.Objects;
 @ToString
 //@JsonInclude(JsonInclude.Include.NON_NULL)
 public class Message {
-    @Id
-    @Indexed
     private String id;
     private MessageType messageType;
     private LocalDateTime senderDate;
@@ -42,11 +40,11 @@ public class Message {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Message message = (Message) o;
-        return Objects.equals(id, message.id);
+        return Objects.equals(this.id, message.id);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id);
+        return Objects.hash(this.id);
     }
 }

@@ -223,4 +223,25 @@ class ChatBackEndApplicationTests {
         userRepository.save(sonnguyen);
         userRepository.save(sonpham);
     }
+
+    @Test
+    void kkk(){
+        User user = userRepository.findById("jgfqCBTFdEgDmpHHXaNHdZV8B982").get();
+        Message message = Message.builder().id("dc46a71e-889e-4f77-8de0-331be7d3ca6f").build();
+        List<Conversation> conversations = user.getConversation();
+        int index = 0;
+        for (Conversation conversation:conversations) {
+            if (conversation instanceof ConversationSingle){
+                if (((ConversationSingle) conversation).getUser().equals(User.builder().id("yGjQT5o0sleSmjHVDHT24SS8FAB2").build())){
+                    for (Message mess: conversation.getMessages()) {
+                        if (mess.getId().equals(message.getId())){
+                            System.out.println(index);
+                            break;
+                        }
+                        index++;
+                    }
+                }
+            }
+        }
+    }
 }

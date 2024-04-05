@@ -26,6 +26,8 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 	implementation 'net.datafaker:datafaker:2.1.0'
 //	implementation("software.amazon.awssdk:s3:2.25.14")
+	implementation 'com.google.code.gson:gson:2.10.1'
+
 	implementation 'org.springframework.boot:spring-boot-starter-websocket'
 
 
