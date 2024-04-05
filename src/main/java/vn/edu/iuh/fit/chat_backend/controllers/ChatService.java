@@ -21,6 +21,32 @@ public class ChatService {
     @Autowired
     private MessageService messageService;
 
+    @MessageMapping("/react-message")
+    public String reactMessage(@Payload MessageText messageText, @Payload MessageFile messageFile){
+        if (messageText.getContent() == null) {
+            System.out.println(messageFile.getReact());
+            simpMessagingTemplate.convertAndSendToUser(messageFile.getId(), "react-message",messageFile.getReact());
+        }else {
+            System.out.println(messageText.getReact());
+        }
+        return "";
+    }
+
+    @MessageMapping("/retrieve-message")
+    public String retrieveMessage(@Payload MessageText messageText, @Payload MessageFile messageFile){
+        if (messageText.getContent() == null) {
+            System.out.println(messageFile);
+            Message messageNew =messageService.retrieveMessageSingle(messageFile);
+            simpMessagingTemplate.convertAndSendToUser(messageFile.getReceiver().getId(), "/retrieveMessage",messageNew);
+            simpMessagingTemplate.convertAndSendToUser(messageFile.getSender().getId(), "/retrieveMessage",messageNew);
+        }else {
+            System.out.println(messageText);
+             Message messageNew =messageService.retrieveMessageSingle(messageText);
+            simpMessagingTemplate.convertAndSendToUser(messageText.getReceiver().getId(), "/retrieveMessage",messageNew);
+            simpMessagingTemplate.convertAndSendToUser(messageText.getSender().getId(), "/retrieveMessage",messageNew);
+        }
+        return "";
+    }
     @MessageMapping("/private-single-message")
     public Message recMessageTextSingle(@Payload MessageText messageText, @Payload MessageFile messageFile) {
         if (messageText.getContent() == null) {
