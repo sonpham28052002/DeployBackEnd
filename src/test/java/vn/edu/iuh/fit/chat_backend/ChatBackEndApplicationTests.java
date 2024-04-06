@@ -226,22 +226,20 @@ class ChatBackEndApplicationTests {
 
     @Test
     void kkk(){
-        User user = userRepository.findById("jgfqCBTFdEgDmpHHXaNHdZV8B982").get();
-        Message message = Message.builder().id("dc46a71e-889e-4f77-8de0-331be7d3ca6f").build();
-        List<Conversation> conversations = user.getConversation();
-        int index = 0;
-        for (Conversation conversation:conversations) {
-            if (conversation instanceof ConversationSingle){
-                if (((ConversationSingle) conversation).getUser().equals(User.builder().id("yGjQT5o0sleSmjHVDHT24SS8FAB2").build())){
-                    for (Message mess: conversation.getMessages()) {
-                        if (mess.getId().equals(message.getId())){
-                            System.out.println(index);
-                            break;
-                        }
-                        index++;
-                    }
-                }
+        List<String> stringList = List.of("yGjQT5o0sleSmjHVDHT24SS8FAB2","N7B7os8xFOMceSxRSIzQlkwr3N43","RGpCgF0lR1aGVcttckhAbBHWcSp2","Ukk2dSG2xlfYBOiih7C2pE7Ct542");
+       User son = userRepository.findById("jgfqCBTFdEgDmpHHXaNHdZV8B982").get();
+        List<User> userList = userRepository.findAll();
+        List<Friend> friends = new ArrayList<>();
+        for (User user:userList) {
+            System.out.println(user.getUserName()+" "+user.getId());
+            if (stringList.contains(user.getId()) && !user.getId().equals(son.getId())){
+                friends.add(Friend.builder().user(User.builder().id(user.getId()).build()).build());
             }
         }
+        son.setFriendList(friends);
+        for (Friend friend:son.getFriendList()) {
+            System.out.println(friend);
+        }
+        userRepository.save(son);
     }
 }
