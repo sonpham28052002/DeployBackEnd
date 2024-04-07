@@ -1,12 +1,8 @@
 package vn.edu.iuh.fit.chat_backend.models;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.*;
-import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.TypeAlias;
-import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 import vn.edu.iuh.fit.chat_backend.types.MessageType;
 
@@ -26,7 +22,6 @@ import java.util.Objects;
 public class Message {
     private String id;
     private MessageType messageType;
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "Asia/Ho_Chi_Minh")
     private LocalDateTime senderDate;
     @JsonIgnoreProperties(value = {"conversation", "friendList","gender","coverImage","bio","phone","logOut","dob","avt","phone","userName"})
     private User sender;

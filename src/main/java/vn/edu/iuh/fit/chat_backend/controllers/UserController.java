@@ -23,6 +23,7 @@ public class UserController {
 
     @GetMapping("/getUserById")
     public Optional<User> getUserById(@RequestParam String id) {
+        System.out.println(id);
         Optional<User> user = userRepository.findById(id);
         for (Conversation conversation:user.get().getConversation()) {
             if (conversation instanceof ConversationSingle){
@@ -31,7 +32,7 @@ public class UserController {
                 ((ConversationSingle) conversation).setUser(userConversation);
             }
         }
-        System.out.println(user.get().getFriendList().size());
+        System.out.println(user.get().getFriendList());
         for (Friend friend:user.get().getFriendList()) {
             User user1 = userRepository.findById(friend.getUser().getId()).get();
             friend.setUser(user1);
