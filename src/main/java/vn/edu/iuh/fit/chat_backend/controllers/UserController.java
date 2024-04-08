@@ -43,8 +43,10 @@ public class UserController {
     @GetMapping("/getInfoUserById")
     public Optional<User> getInfoUserById(@RequestParam String id) {
         Optional<User> user = userRepository.findById(id);
-        user.get().setConversation(null);
-        user.get().setFriendList(null);
+        if (user.isPresent()){
+            user.get().setConversation(null);
+            user.get().setFriendList(null);
+        }
         return user;
     }
 
