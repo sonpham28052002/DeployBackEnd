@@ -14,6 +14,7 @@ import vn.edu.iuh.fit.chat_backend.types.MessageType;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 
 @Controller
 public class ChatService {
@@ -79,6 +80,7 @@ public class ChatService {
                 messageFile.setSenderDate(LocalDateTime.now());
                 messageService.insertMessageSingleSender(messageFile);
                 messageService.insertMessageSingleReceiver(messageFile);
+                messageFile.setId(UUID.randomUUID().toString());
                 simpMessagingTemplate.convertAndSendToUser(messageFile.getReceiver().getId() + "", "/singleChat", messageFile);
                 simpMessagingTemplate.convertAndSendToUser(messageFile.getSender().getId() + "", "/singleChat", messageFile);
             }
@@ -88,6 +90,7 @@ public class ChatService {
                 messageText.setSenderDate(LocalDateTime.now());
                 messageService.insertMessageSingleSender(messageText);
                 messageService.insertMessageSingleReceiver(messageText);
+                messageText.setId(UUID.randomUUID().toString());
                 simpMessagingTemplate.convertAndSendToUser(messageText.getReceiver().getId() + "", "/singleChat", messageText);
                 simpMessagingTemplate.convertAndSendToUser(messageText.getSender().getId() + "", "/singleChat", messageText);
             }
