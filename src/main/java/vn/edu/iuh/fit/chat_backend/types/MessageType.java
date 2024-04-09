@@ -26,6 +26,7 @@ public enum MessageType {
     Text("text/content"),
     TXT("text/plain"),
     STICKER("image/sticker"),
+    UNKNOWN("UNKNOWN"),
     RETRIEVE("RETRIEVE");
     private final String MessageType;
 

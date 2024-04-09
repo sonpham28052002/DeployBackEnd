@@ -19,7 +19,8 @@ public class AzureController {
     @PostMapping("/upload")
     public String upload(@RequestParam MultipartFile file) throws IOException {
         String type =file.getOriginalFilename().substring(file.getOriginalFilename().lastIndexOf(".")+1);
-        return azureStorageService.uploadFile(UUID.randomUUID().toString()+"."+type,file.getInputStream(),file.getSize(),file.getContentType());
+        String name = file.getOriginalFilename().substring(0,file.getOriginalFilename().lastIndexOf(".")-1);
+        return azureStorageService.uploadFile(UUID.randomUUID().toString()+"_"+name+"."+type,file.getInputStream(),file.getSize(),file.getContentType());
     }
     @PostMapping("/changeImage")
     public String changeImage(@RequestParam MultipartFile file, @RequestParam String name) throws IOException {

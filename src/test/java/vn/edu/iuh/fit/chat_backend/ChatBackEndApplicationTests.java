@@ -56,7 +56,7 @@ class ChatBackEndApplicationTests {
             messageText.setMessageType(MessageType.Text);
             messageText.setContent(faker.text().text());
             messageText.setId(UUID.randomUUID().toString());
-            messageText.setSeen(List.of(User.builder().id(sonpham.getId()).build(), User.builder().id(cuong.getId()).build(),User.builder().id(leon.getId()).build()));
+            messageText.setSeen(List.of(User.builder().id(sonpham.getId()).build(), User.builder().id(cuong.getId()).build(), User.builder().id(leon.getId()).build()));
             if (i % 2 == 0) {
                 messageText.setSender(User.builder().id(cuong.getId()).build());
             } else {
@@ -71,7 +71,7 @@ class ChatBackEndApplicationTests {
         conversationGroup.setNameGroup(faker.company().name());
         conversationGroup.setConversationType(ConversationType.group);
         conversationGroup.setMessages(messageListGroup);
-        conversationGroup.setMembers(List.of(User.builder().id(sonpham.getId()).build(), User.builder().id(cuong.getId()).build(),User.builder().id(leon.getId()).build()));
+        conversationGroup.setMembers(List.of(User.builder().id(sonpham.getId()).build(), User.builder().id(cuong.getId()).build(), User.builder().id(leon.getId()).build()));
         conversationGroup.setUpdateLast(LocalDateTime.now());
         conversationGroup.setLastMessage();
         System.out.println(conversationGroup.getMessages());
@@ -144,7 +144,7 @@ class ChatBackEndApplicationTests {
         conversationsSon.add(conversationSingleSonLeon);
         conversationsSon.add(conversationGroup);
         sonpham.setConversation(conversationsSon);
-        for (Conversation conversation:sonpham.getConversation()) {
+        for (Conversation conversation : sonpham.getConversation()) {
             System.out.println(conversation);
         }
         userRepository.save(sonpham);
@@ -152,15 +152,15 @@ class ChatBackEndApplicationTests {
     }
 
     @Test
-    void aa(){
+    void aa() {
         User leon = userRepository.findById("yGjQT5o0sleSmjHVDHT24SS8FAB2").get();
         User sonpham = userRepository.findById("jgfqCBTFdEgDmpHHXaNHdZV8B982").get();
         List<Message> messageList = new ArrayList<>();
-        for (Conversation conversation:sonpham.getConversation()) {
-            if (conversation instanceof ConversationSingle){
-              if ( ((ConversationSingle) conversation).getUser().equals(User.builder().id(leon.getId()).build()) ){
-                  messageList.addAll(conversation.getMessages());
-              }
+        for (Conversation conversation : sonpham.getConversation()) {
+            if (conversation instanceof ConversationSingle) {
+                if (((ConversationSingle) conversation).getUser().equals(User.builder().id(leon.getId()).build())) {
+                    messageList.addAll(conversation.getMessages());
+                }
             }
         }
         ConversationSingle conversationSingleLeon = new ConversationSingle();
@@ -175,7 +175,7 @@ class ChatBackEndApplicationTests {
     }
 
     @Test
-    void test(){
+    void test() {
         Faker faker = new Faker();
         User sonpham = userRepository.findById("jgfqCBTFdEgDmpHHXaNHdZV8B982").get();
         User sonnguyen = userRepository.findById("RGpCgF0lR1aGVcttckhAbBHWcSp2").get();
@@ -225,23 +225,21 @@ class ChatBackEndApplicationTests {
     }
 
     @Test
-    void kkk(){
-        User user = userRepository.findById("jgfqCBTFdEgDmpHHXaNHdZV8B982").get();
-        Message message = Message.builder().id("dc46a71e-889e-4f77-8de0-331be7d3ca6f").build();
-        List<Conversation> conversations = user.getConversation();
-        int index = 0;
-        for (Conversation conversation:conversations) {
-            if (conversation instanceof ConversationSingle){
-                if (((ConversationSingle) conversation).getUser().equals(User.builder().id("yGjQT5o0sleSmjHVDHT24SS8FAB2").build())){
-                    for (Message mess: conversation.getMessages()) {
-                        if (mess.getId().equals(message.getId())){
-                            System.out.println(index);
-                            break;
-                        }
-                        index++;
-                    }
-                }
+    void kkk() {
+        List<String> stringList = List.of("yGjQT5o0sleSmjHVDHT24SS8FAB2", "N7B7os8xFOMceSxRSIzQlkwr3N43", "RGpCgF0lR1aGVcttckhAbBHWcSp2", "Ukk2dSG2xlfYBOiih7C2pE7Ct542");
+        User son = userRepository.findById("jgfqCBTFdEgDmpHHXaNHdZV8B982").get();
+        List<User> userList = userRepository.findAll();
+        List<Friend> friends = new ArrayList<>();
+        for (User user : userList) {
+            System.out.println(user.getUserName() + " " + user.getId());
+            if (stringList.contains(user.getId()) && !user.getId().equals(son.getId())) {
+                friends.add(Friend.builder().user(User.builder().id(user.getId()).build()).build());
             }
         }
+        son.setFriendList(friends);
+        for (Friend friend : son.getFriendList()) {
+            System.out.println(friend);
+        }
+        userRepository.save(son);
     }
 }
