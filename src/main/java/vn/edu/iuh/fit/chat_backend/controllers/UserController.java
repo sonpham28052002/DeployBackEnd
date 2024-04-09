@@ -5,10 +5,7 @@ import net.datafaker.Faker;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
-import vn.edu.iuh.fit.chat_backend.models.Conversation;
-import vn.edu.iuh.fit.chat_backend.models.ConversationSingle;
-import vn.edu.iuh.fit.chat_backend.models.Message;
-import vn.edu.iuh.fit.chat_backend.models.User;
+import vn.edu.iuh.fit.chat_backend.models.*;
 import vn.edu.iuh.fit.chat_backend.repositories.UserRepository;
 
 import java.util.*;
@@ -26,6 +23,7 @@ public class UserController {
 
     @GetMapping("/getUserById")
     public Optional<User> getUserById(@RequestParam String id) {
+        System.out.println(id);
         Optional<User> user = userRepository.findById(id);
         for (Conversation conversation:user.get().getConversation()) {
             if (conversation instanceof ConversationSingle){
@@ -34,14 +32,21 @@ public class UserController {
                 ((ConversationSingle) conversation).setUser(userConversation);
             }
         }
+        System.out.println(user.get().getFriendList());
+        for (Friend friend:user.get().getFriendList()) {
+            User user1 = userRepository.findById(friend.getUser().getId()).get();
+            friend.setUser(user1);
+        }
         return user;
     }
 
     @GetMapping("/getInfoUserById")
     public Optional<User> getInfoUserById(@RequestParam String id) {
         Optional<User> user = userRepository.findById(id);
-        user.get().setConversation(null);
-        user.get().setFriendList(null);
+        if (user.isPresent()){
+            user.get().setConversation(null);
+            user.get().setFriendList(null);
+        }
         return user;
     }
 

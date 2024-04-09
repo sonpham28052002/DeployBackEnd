@@ -8,14 +8,13 @@ import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
-import vn.edu.iuh.fit.chat_backend.models.Message;
-import vn.edu.iuh.fit.chat_backend.models.MessageFile;
-import vn.edu.iuh.fit.chat_backend.models.MessageText;
-import vn.edu.iuh.fit.chat_backend.models.SendQR;
+import vn.edu.iuh.fit.chat_backend.models.*;
 import vn.edu.iuh.fit.chat_backend.services.MessageService;
 import vn.edu.iuh.fit.chat_backend.types.MessageType;
 
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.UUID;
 
 @Controller
 public class ChatService {
@@ -72,6 +71,47 @@ public class ChatService {
         } else {
         }
         return "";
+    }
+
+    @MessageMapping("/forward-message")
+    public Message forwardMessage(@Payload List<MessageText> messageTexts, @Payload List<MessageFile> messageFiles) {
+        if (messageTexts.get(0).getContent() == null) {
+            for (MessageFile messageFile:messageFiles) {
+                messageFile.setSenderDate(LocalDateTime.now());
+                messageService.insertMessageSingleSender(messageFile);
+                messageService.insertMessageSingleReceiver(messageFile);
+                messageFile.setId(UUID.randomUUID().toString());
+                simpMessagingTemplate.convertAndSendToUser(messageFile.getReceiver().getId() + "", "/singleChat", messageFile);
+                simpMessagingTemplate.convertAndSendToUser(messageFile.getSender().getId() + "", "/singleChat", messageFile);
+            }
+            return null;
+        } else {
+            for (MessageText messageText:messageTexts) {
+                messageText.setSenderDate(LocalDateTime.now());
+                messageService.insertMessageSingleSender(messageText);
+                messageService.insertMessageSingleReceiver(messageText);
+                messageText.setId(UUID.randomUUID().toString());
+                simpMessagingTemplate.convertAndSendToUser(messageText.getReceiver().getId() + "", "/singleChat", messageText);
+                simpMessagingTemplate.convertAndSendToUser(messageText.getSender().getId() + "", "/singleChat", messageText);
+            }
+            return null;
+        }
+
+    }
+
+
+    @MessageMapping("/deleteConversation")
+    public Conversation deleteConversation(@Payload String conversation) throws JsonProcessingException {
+        ObjectMapper mapper = new ObjectMapper();
+        JsonNode rootNode = mapper.readTree(conversation);
+        String idGroup = rootNode.get("idGroup").asText();
+        String idUser = rootNode.get("idUser").asText();
+        String ownerId = rootNode.get("ownerId").asText();
+        System.out.println(idGroup);
+        System.out.println(idUser);
+        System.out.println(ownerId);
+
+        return null;
     }
 
     @MessageMapping("/private-single-message")
