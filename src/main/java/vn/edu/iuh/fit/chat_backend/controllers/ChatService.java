@@ -52,94 +52,155 @@ public class ChatService {
 
     @MessageMapping("/delete-message")
     public String deleteMessage(@Payload MessageText messageText, @Payload MessageFile messageFile, @Payload String idGroup) throws JsonProcessingException {
-        System.out.println(messageFile.getSize());
-        System.out.println(messageText.getContent());
         ObjectMapper mapper = new ObjectMapper();
         JsonNode rootNode = mapper.readTree(idGroup);
         String Group = rootNode.get("idGroup").asText();
         String ownerId = rootNode.get("ownerId").asText();
-        if (Group.equals("")) {
+        if (Group.trim().equals("")) {
             if (messageText.getContent() == null) {
                 System.out.println(messageFile);
-                messageService.deleteMessageSingle(messageFile, ownerId);
+                messageService.deleteMessageSingle(messageFile, ownerId,Group);
                 simpMessagingTemplate.convertAndSendToUser(ownerId, "/deleteMessage", messageFile);
             } else {
                 System.out.println(messageText.getReceiver());
-                messageService.deleteMessageSingle(messageText, ownerId);
+                messageService.deleteMessageSingle(messageText, ownerId,Group);
                 simpMessagingTemplate.convertAndSendToUser(ownerId, "/deleteMessage", messageText);
             }
         } else {
+            if (messageText.getContent() == null) {
+                System.out.println(messageFile);
+                messageService.deleteMessageSingle(messageFile, ownerId,Group);
+                simpMessagingTemplate.convertAndSendToUser(ownerId, "/deleteMessage", messageFile);
+            } else {
+                System.out.println(messageText.getReceiver());
+                messageService.deleteMessageSingle(messageText, ownerId,Group);
+                simpMessagingTemplate.convertAndSendToUser(ownerId, "/deleteMessage", messageText);
+            }
         }
         return "";
     }
 
     @MessageMapping("/forward-message")
     public Message forwardMessage(@Payload List<MessageText> messageTexts, @Payload List<MessageFile> messageFiles) {
+
         if (messageTexts.get(0).getContent() == null) {
             for (MessageFile messageFile : messageFiles) {
-                messageFile.setSenderDate(LocalDateTime.now());
-                messageService.insertMessageSingleSender(messageFile);
-                messageService.insertMessageSingleReceiver(messageFile);
-                messageFile.setId(UUID.randomUUID().toString());
-                simpMessagingTemplate.convertAndSendToUser(messageFile.getReceiver().getId() + "", "/singleChat", messageFile);
-                simpMessagingTemplate.convertAndSendToUser(messageFile.getSender().getId() + "", "/singleChat", messageFile);
+                int index = messageFile.getReceiver().getId().indexOf("_");
+                if (index == -1){
+                    messageFile.setSenderDate(LocalDateTime.now());
+                    messageService.insertMessageSingleSender(messageFile);
+                    messageService.insertMessageSingleReceiver(messageFile);
+                    messageFile.setId(UUID.randomUUID().toString());
+                    simpMessagingTemplate.convertAndSendToUser(messageFile.getReceiver().getId() + "", "/singleChat", messageFile);
+                    simpMessagingTemplate.convertAndSendToUser(messageFile.getSender().getId() + "", "/singleChat", messageFile);
+                }else{
+                    String idGroup =messageFile.getReceiver().getId().substring(messageFile.getReceiver().getId().indexOf("_")+1,messageFile.getReceiver().getId().length());
+                    List<Member> memberList = messageService.insertMessageGroup(messageFile, idGroup);
+                    if (memberList.size() !=0) {
+                        for (Member member:memberList) {
+                            simpMessagingTemplate.convertAndSendToUser(member.getMember().getId() + "", "/groupChat", messageFile);
+                        }
+                    } else {
+                        simpMessagingTemplate.convertAndSendToUser(messageFile.getSender().getId() + "", "/groupChat", messageFile);
+                    }
+                }
             }
             return null;
         } else {
             for (MessageText messageText : messageTexts) {
-                messageText.setSenderDate(LocalDateTime.now());
-                messageService.insertMessageSingleSender(messageText);
-                messageService.insertMessageSingleReceiver(messageText);
-                messageText.setId(UUID.randomUUID().toString());
-                simpMessagingTemplate.convertAndSendToUser(messageText.getReceiver().getId() + "", "/singleChat", messageText);
-                simpMessagingTemplate.convertAndSendToUser(messageText.getSender().getId() + "", "/singleChat", messageText);
+                int index = messageText.getReceiver().getId().indexOf("_");
+                if (index == -1){
+                    messageText.setSenderDate(LocalDateTime.now());
+                    messageService.insertMessageSingleSender(messageText);
+                    messageService.insertMessageSingleReceiver(messageText);
+                    messageText.setId(UUID.randomUUID().toString());
+                    simpMessagingTemplate.convertAndSendToUser(messageText.getReceiver().getId() + "", "/singleChat", messageText);
+                    simpMessagingTemplate.convertAndSendToUser(messageText.getSender().getId() + "", "/singleChat", messageText);
+                }else{
+                    String idGroup =messageText.getReceiver().getId().substring(messageText.getReceiver().getId().indexOf("_")+1,messageText.getReceiver().getId().length());
+                    List<Member> memberList = messageService.insertMessageGroup(messageText, idGroup);
+                    if (memberList.size() !=0) {
+                        for (Member member:memberList) {
+                            simpMessagingTemplate.convertAndSendToUser(member.getMember().getId() + "", "/groupChat", messageText);
+                        }
+                    } else {
+                        simpMessagingTemplate.convertAndSendToUser(messageText.getSender().getId() + "", "/groupChat", messageText);
+                    }
+                }
+
             }
             return null;
         }
+    }
+
+    @MessageMapping("/create-Group")
+    public void createGroup(@Payload List<User> members){
 
     }
 
 
     @MessageMapping("/deleteConversation")
     public Conversation deleteConversation(@Payload String conversation) throws JsonProcessingException {
-        System.out.println("idGroup");
-        System.out.println(conversation);
         ObjectMapper mapper = new ObjectMapper();
         JsonNode rootNode = mapper.readTree(conversation);
         String idGroup = rootNode.get("idGroup").asText();
         String idUser = rootNode.get("idUser").asText();
         String ownerId = rootNode.get("ownerId").asText();
-        System.out.println(idGroup);
-        System.out.println(idUser);
-        System.out.println(ownerId);
-        Conversation conversation1  = messageService.deleteConversation(ownerId, idUser, idGroup);
-        if (conversation1 != null){
+        Conversation conversation1 = messageService.deleteConversation(ownerId, idUser, idGroup);
+        if (conversation1 != null) {
             simpMessagingTemplate.convertAndSendToUser(ownerId + "", "/deleteConversation", conversation1);
-        }else {
+        } else {
             simpMessagingTemplate.convertAndSendToUser(ownerId + "", "/deleteConversation", new Conversation());
         }
         return null;
     }
 
     @MessageMapping("/private-single-message")
-    public Message recMessageTextSingle(@Payload MessageText messageText, @Payload MessageFile messageFile) {
-        if (messageText.getContent() == null) {
-            messageFile.setSenderDate(LocalDateTime.now());
-            messageService.insertMessageSingleSender(messageFile);
-            messageService.insertMessageSingleReceiver(messageFile);
-            simpMessagingTemplate.convertAndSendToUser(messageFile.getReceiver().getId() + "", "/singleChat", messageFile);
-            simpMessagingTemplate.convertAndSendToUser(messageFile.getSender().getId() + "", "/singleChat", messageFile);
+    public Message recMessageTextSingle(@Payload MessageText messageText, @Payload MessageFile messageFile, @Payload String idGroup) throws JsonProcessingException {
+        ObjectMapper mapper = new ObjectMapper();
+        JsonNode rootNode = mapper.readTree(idGroup);
+        String idG = rootNode.get("idGroup").asText();
+        if (!idG.trim().equals("")) {
+            System.out.println(idG);
+            if (messageText.getContent() == null) {
+                List<Member> memberList = messageService.insertMessageGroup(messageFile, idG);
+                if (memberList.size() !=0) {
+                    for (Member member:memberList) {
+                        simpMessagingTemplate.convertAndSendToUser(member.getMember().getId() + "", "/groupChat", messageFile);
+                    }
+                } else {
+                    simpMessagingTemplate.convertAndSendToUser(messageFile.getSender().getId() + "", "/groupChat", messageFile);
 
-            return messageFile;
+                }
+            } else {
+                List<Member> memberList = messageService.insertMessageGroup(messageText, idG);
+                if (memberList.size() !=0) {
+                    for (Member member:memberList) {
+                        simpMessagingTemplate.convertAndSendToUser(member.getMember().getId() + "", "/groupChat", messageText);
+                    }
+                } else {
+                    simpMessagingTemplate.convertAndSendToUser(messageText.getSender().getId() + "", "/groupChat", messageText);
+                }
+            }
         } else {
-            messageText.setSenderDate(LocalDateTime.now());
-            messageService.insertMessageSingleSender(messageText);
-            messageService.insertMessageSingleReceiver(messageText);
-            simpMessagingTemplate.convertAndSendToUser(messageText.getReceiver().getId() + "", "/singleChat", messageText);
-            simpMessagingTemplate.convertAndSendToUser(messageText.getSender().getId() + "", "/singleChat", messageText);
-            return messageText;
-        }
+            if (messageText.getContent() == null) {
+                messageFile.setSenderDate(LocalDateTime.now());
+                messageService.insertMessageSingleSender(messageFile);
+                messageService.insertMessageSingleReceiver(messageFile);
+                simpMessagingTemplate.convertAndSendToUser(messageFile.getReceiver().getId() + "", "/singleChat", messageFile);
+                simpMessagingTemplate.convertAndSendToUser(messageFile.getSender().getId() + "", "/singleChat", messageFile);
 
+                return messageFile;
+            } else {
+                messageText.setSenderDate(LocalDateTime.now());
+                messageService.insertMessageSingleSender(messageText);
+                messageService.insertMessageSingleReceiver(messageText);
+                simpMessagingTemplate.convertAndSendToUser(messageText.getReceiver().getId() + "", "/singleChat", messageText);
+                simpMessagingTemplate.convertAndSendToUser(messageText.getSender().getId() + "", "/singleChat", messageText);
+                return messageText;
+            }
+        }
+        return null;
     }
 
     @MessageMapping("/private-group-message")

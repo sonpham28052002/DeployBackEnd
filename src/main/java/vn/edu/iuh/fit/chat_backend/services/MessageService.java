@@ -5,9 +5,11 @@ import org.springframework.stereotype.Service;
 import vn.edu.iuh.fit.chat_backend.models.*;
 import vn.edu.iuh.fit.chat_backend.repositories.UserRepository;
 import vn.edu.iuh.fit.chat_backend.types.ConversationType;
+import vn.edu.iuh.fit.chat_backend.types.MemberType;
 import vn.edu.iuh.fit.chat_backend.types.MessageType;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -52,6 +54,51 @@ public class MessageService {
         return true;
     }
 
+    public List<Member> insertMessageGroup(Message message, String idGroup){
+        Optional<User> user = userRepository.findById(message.getSender().getId());
+        if (user.isEmpty()){
+            return new ArrayList<>();
+        }
+        List<Member> membersActive = new ArrayList<>();
+        List<Conversation> conversationList = user.get().getConversation();
+        for (Conversation conversation:conversationList) {
+            if (conversation instanceof ConversationGroup && ((ConversationGroup) conversation).getIdGroup().trim().equals(idGroup.trim())){
+                for (Member member:((ConversationGroup) conversation).getMembers()) {
+                    if (member.getMemberType().equals(MemberType.ACTIVE)){
+                        addMessageGroupForMemberReceiver(message,idGroup,member.getMember().getId(), conversation );
+                        membersActive.add(member);
+                    }
+                }
+                return membersActive;
+            }
+        }
+        return new ArrayList<>();
+    }
+
+    public boolean addMessageGroupForMemberReceiver(Message message , String idGroup, String idUserMember, Conversation conversationGroup){
+        try {
+            Optional<User> user = userRepository.findById(idUserMember);
+            List<Conversation> conversations = user.get().getConversation();
+            for (Conversation conversation:conversations) {
+                if (conversation instanceof ConversationGroup && ((ConversationGroup) conversation).getIdGroup().trim().equals(idGroup.trim())){
+                    conversation.getMessages().add(message);
+                    conversation.setLastMessage();
+                    userRepository.save(user.get());
+                    return true;
+                }
+            }
+            conversationGroup.setMessages(List.of(message));
+            conversationGroup.setLastMessage();
+            user.get().getConversation().add(conversationGroup);
+            return true;
+
+        }catch (Exception exception){
+            exception.printStackTrace();
+        }
+        return false;
+    }
+
+
     public Message retrieveMessageSingle(Message message){
         System.out.println(message.getId());
         Optional<User> userReceiver = userRepository.findById(message.getReceiver().getId());
@@ -90,11 +137,21 @@ public class MessageService {
         return message;
     }
 
-    public boolean deleteMessageSingle(Message message, String ownerID){
+    public boolean deleteMessageSingle(Message message, String ownerID, String idGroup){
         Optional<User> user = userRepository.findById(ownerID);
         List<Conversation> conversations = user.get().getConversation();
         try {
-            if ("idGroup".trim().equals("")){
+            if (!idGroup.trim().equals("")){
+                for (Conversation conversation:conversations) {
+                    if (conversation instanceof ConversationGroup && ((ConversationGroup) conversation).getIdGroup().trim().equals(idGroup.trim())){
+                            List<Message> messageList = conversation.getMessages();
+                            System.out.println(messageList.indexOf(message));
+                            messageList.remove(messageList.indexOf(message));
+                            conversation.setLastMessage();
+                            userRepository.save(user.get());
+                            return true;
+                    }
+                }
             }else {
                 User userMember = null;
                 if (user.get().getId().equals(message.getSender().getId())){

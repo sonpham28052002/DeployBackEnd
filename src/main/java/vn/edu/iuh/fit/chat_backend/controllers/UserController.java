@@ -28,7 +28,6 @@ public class UserController {
         if (phone.indexOf("0") !=-1){
             phone = phone.substring(0 , phone.indexOf("0")) + phone.substring(phone.indexOf("0")+1 ,phone.length());
         }
-        System.out.println(phone);
         return userService.getUserByPhone(phone);
     }
 
@@ -43,7 +42,6 @@ public class UserController {
                 ((ConversationSingle) conversation).setUser(userConversation);
             }
         }
-        System.out.println(user.get().getFriendList());
         for (Friend friend:user.get().getFriendList()) {
             User user1 = userRepository.findById(friend.getUser().getId()).get();
             friend.setUser(user1);
