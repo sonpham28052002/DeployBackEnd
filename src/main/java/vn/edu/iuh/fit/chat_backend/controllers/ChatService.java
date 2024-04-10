@@ -76,7 +76,7 @@ public class ChatService {
     @MessageMapping("/forward-message")
     public Message forwardMessage(@Payload List<MessageText> messageTexts, @Payload List<MessageFile> messageFiles) {
         if (messageTexts.get(0).getContent() == null) {
-            for (MessageFile messageFile:messageFiles) {
+            for (MessageFile messageFile : messageFiles) {
                 messageFile.setSenderDate(LocalDateTime.now());
                 messageService.insertMessageSingleSender(messageFile);
                 messageService.insertMessageSingleReceiver(messageFile);
@@ -86,7 +86,7 @@ public class ChatService {
             }
             return null;
         } else {
-            for (MessageText messageText:messageTexts) {
+            for (MessageText messageText : messageTexts) {
                 messageText.setSenderDate(LocalDateTime.now());
                 messageService.insertMessageSingleSender(messageText);
                 messageService.insertMessageSingleReceiver(messageText);
@@ -102,6 +102,8 @@ public class ChatService {
 
     @MessageMapping("/deleteConversation")
     public Conversation deleteConversation(@Payload String conversation) throws JsonProcessingException {
+        System.out.println("idGroup");
+        System.out.println(conversation);
         ObjectMapper mapper = new ObjectMapper();
         JsonNode rootNode = mapper.readTree(conversation);
         String idGroup = rootNode.get("idGroup").asText();
@@ -110,7 +112,12 @@ public class ChatService {
         System.out.println(idGroup);
         System.out.println(idUser);
         System.out.println(ownerId);
-
+        Conversation conversation1  = messageService.deleteConversation(ownerId, idUser, idGroup);
+        if (conversation1 != null){
+            simpMessagingTemplate.convertAndSendToUser(ownerId + "", "/deleteConversation", conversation1);
+        }else {
+            simpMessagingTemplate.convertAndSendToUser(ownerId + "", "/deleteConversation", new Conversation());
+        }
         return null;
     }
 

@@ -7,6 +7,7 @@ import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import vn.edu.iuh.fit.chat_backend.models.*;
 import vn.edu.iuh.fit.chat_backend.repositories.UserRepository;
+import vn.edu.iuh.fit.chat_backend.services.UserService;
 
 import java.util.*;
 
@@ -15,10 +16,20 @@ import java.util.*;
 public class UserController {
     @Autowired
     private UserRepository userRepository;
-
+    @Autowired
+    private UserService userService;
     @GetMapping("/all")
     public List<User> getAll() {
         return userRepository.findAll();
+    }
+
+    @GetMapping("/getUserByPhone")
+    public Optional<User> getUserByPhone(@RequestParam String phone) {
+        if (phone.indexOf("0") !=-1){
+            phone = phone.substring(0 , phone.indexOf("0")) + phone.substring(phone.indexOf("0")+1 ,phone.length());
+        }
+        System.out.println(phone);
+        return userService.getUserByPhone(phone);
     }
 
     @GetMapping("/getUserById")

@@ -19,8 +19,7 @@ import java.util.Objects;
 @AllArgsConstructor
 public class ConversationGroup extends Conversation {
     private String idGroup;
-    @JsonIgnoreProperties(value = {"conversation", "friendList", "gender", "coverImage", "bio", "phone", "logOut", "dob", "avt", "phone", "userName"})
-    private List<User> members;
+    private List<Member> members;
     private String avtGroup;
     private String nameGroup;
 

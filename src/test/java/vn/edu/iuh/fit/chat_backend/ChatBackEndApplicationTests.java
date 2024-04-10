@@ -13,6 +13,7 @@ import vn.edu.iuh.fit.chat_backend.services.MessageService;
 import vn.edu.iuh.fit.chat_backend.services.UserService;
 import vn.edu.iuh.fit.chat_backend.types.ConversationType;
 import vn.edu.iuh.fit.chat_backend.types.Gender;
+import vn.edu.iuh.fit.chat_backend.types.MemberType;
 import vn.edu.iuh.fit.chat_backend.types.MessageType;
 
 import java.security.Timestamp;
@@ -51,7 +52,7 @@ class ChatBackEndApplicationTests {
         // tạo conversation group
         List<Message> messageListGroup = new ArrayList<>();
 
-        for (int i = 0; i < 6; i++) {
+        for (int i = 0; i < 12; i++) {
             MessageText messageText = new MessageText();
             messageText.setMessageType(MessageType.Text);
             messageText.setContent(faker.text().text());
@@ -59,7 +60,10 @@ class ChatBackEndApplicationTests {
             messageText.setSeen(List.of(User.builder().id(sonpham.getId()).build(), User.builder().id(cuong.getId()).build(), User.builder().id(leon.getId()).build()));
             if (i % 2 == 0) {
                 messageText.setSender(User.builder().id(cuong.getId()).build());
-            } else {
+            }
+            else if(i%3==0) {
+                messageText.setSender(User.builder().id(leon.getId()).build());
+            }else{
                 messageText.setSender(User.builder().id(sonpham.getId()).build());
             }
             messageText.setSenderDate(LocalDateTime.now());
@@ -71,7 +75,17 @@ class ChatBackEndApplicationTests {
         conversationGroup.setNameGroup(faker.company().name());
         conversationGroup.setConversationType(ConversationType.group);
         conversationGroup.setMessages(messageListGroup);
-        conversationGroup.setMembers(List.of(User.builder().id(sonpham.getId()).build(), User.builder().id(cuong.getId()).build(), User.builder().id(leon.getId()).build()));
+        conversationGroup.setMembers(List.of(
+                Member.builder()
+                .member(User.builder().id(sonpham.getId()).build())
+                .memberType(MemberType.ACTIVE).build(),
+                Member.builder()
+                        .member(User.builder().id(cuong.getId()).build())
+                        .memberType(MemberType.ACTIVE).build(),
+                Member.builder()
+                        .member(User.builder().id(leon.getId()).build())
+                        .memberType(MemberType.ACTIVE).build()
+        ));
         conversationGroup.setUpdateLast(LocalDateTime.now());
         conversationGroup.setLastMessage();
         System.out.println(conversationGroup.getMessages());

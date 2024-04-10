@@ -8,6 +8,7 @@ import vn.edu.iuh.fit.chat_backend.repositories.UserRepository;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class UserService {
@@ -48,5 +49,11 @@ public class UserService {
             exception.printStackTrace();
         }
         return false;
+    }
+    public Optional<User> getUserByPhone(String phone){
+        Optional<User> user = userRepository.getUserByPhone(phone);
+        user.get().setConversation(new ArrayList<>());
+        user.get().setFriendList(new ArrayList<>());
+        return user;
     }
 }

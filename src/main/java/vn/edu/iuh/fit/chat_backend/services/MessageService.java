@@ -2,10 +2,7 @@ package vn.edu.iuh.fit.chat_backend.services;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import vn.edu.iuh.fit.chat_backend.models.Conversation;
-import vn.edu.iuh.fit.chat_backend.models.ConversationSingle;
-import vn.edu.iuh.fit.chat_backend.models.Message;
-import vn.edu.iuh.fit.chat_backend.models.User;
+import vn.edu.iuh.fit.chat_backend.models.*;
 import vn.edu.iuh.fit.chat_backend.repositories.UserRepository;
 import vn.edu.iuh.fit.chat_backend.types.ConversationType;
 import vn.edu.iuh.fit.chat_backend.types.MessageType;
@@ -156,4 +153,31 @@ public class MessageService {
         return true;
     }
 
+    public Conversation deleteConversation(String ownerId,String userID , String groupId){
+        Optional<User> user = userRepository.findById(ownerId);
+        if (user.isEmpty()){
+            return null;
+        }
+        if (!groupId.trim().equals("")) {
+            for (Conversation conversation:user.get().getConversation()) {
+                if (conversation instanceof ConversationGroup && ((ConversationGroup) conversation).getIdGroup().trim().equals(groupId.trim())){
+                    user.get().getConversation().remove(conversation);
+                    System.out.println(conversation);
+                    userRepository.save(user.get());
+                    return conversation;
+                }
+            }
+        }else {
+            for (Conversation conversation:user.get().getConversation()) {
+                if (conversation instanceof ConversationSingle && ((ConversationSingle) conversation).getUser().getId().trim().equals(userID)){
+                    user.get().getConversation().remove(conversation);
+                    System.out.println(conversation);
+                    userRepository.save(user.get());
+
+                    return conversation;
+                }
+            }
+        }
+        return null;
+    }
 }
