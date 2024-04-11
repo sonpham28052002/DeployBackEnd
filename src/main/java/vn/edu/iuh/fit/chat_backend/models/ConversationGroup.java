@@ -23,9 +23,10 @@ public class ConversationGroup extends Conversation {
     private String avtGroup;
     private String nameGroup;
 
-    //    private User leaderTeam;
-//    @JsonIgnoreProperties(value = {"conversation", "friendList", "gender", "coverImage", "bio", "phone", "logOut", "dob", "avt", "phone", "userName"})
-//    private List<User> subTeamList;
+    @JsonIgnoreProperties(value = {"conversation", "friendList","gender","coverImage","bio","phone","logOut","dob","avt","phone","userName"})
+    private User leaderTeam;
+    @JsonIgnoreProperties(value = {"conversation", "friendList","gender","coverImage","bio","phone","logOut","dob","avt","phone","userName"})
+    private List<User> subTeamList;
 
     @Override
     public boolean equals(Object o) {

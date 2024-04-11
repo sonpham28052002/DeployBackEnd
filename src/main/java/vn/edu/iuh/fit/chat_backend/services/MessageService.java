@@ -137,6 +137,47 @@ public class MessageService {
         return message;
     }
 
+
+    public List<Member> retrieveMessageGroup(Message message , String idGroup){
+        System.out.println(message.getId());
+        Optional<User> userSender= userRepository.findById(message.getSender().getId());
+        List<Member> members = new ArrayList<>();
+        List<Conversation> conversationsSender = userSender.get().getConversation();
+        for (Conversation conversation:conversationsSender) {
+            if (conversation instanceof ConversationGroup && ((ConversationGroup) conversation).getIdGroup().trim().equals(idGroup.trim())){
+                for (Member member:((ConversationGroup) conversation).getMembers()) {
+                    if (updateMessageGroup(message,member.getMember().getId(),idGroup)){
+                        members.add(member);
+                    }
+                }
+            }
+        }
+        message.setMessageType(MessageType.RETRIEVE);
+        return members;
+    }
+
+    public boolean updateMessageGroup(Message message , String userID,String idGroup){
+        try {
+            Optional<User> user = userRepository.findById(userID);
+            for (Conversation conversation:user.get().getConversation()) {
+                if (conversation instanceof ConversationGroup && ((ConversationGroup) conversation).getIdGroup().trim().equals(idGroup.trim())){
+                    List<Message> messageList = conversation.getMessages();
+                    Message message1 =  messageList.get(messageList.indexOf(message));
+                    message1.setMessageType(MessageType.RETRIEVE);
+                    messageList.set(messageList.indexOf(message),message1);
+                    conversation.setLastMessage();
+                    conversation.setUpdateLast(LocalDateTime.now());
+                    userRepository.save(user.get());
+
+                }
+            }
+            return true;
+        }catch (Exception exception){
+            exception.printStackTrace();
+        }
+        return false;
+    }
+
     public boolean deleteMessageSingle(Message message, String ownerID, String idGroup){
         Optional<User> user = userRepository.findById(ownerID);
         List<Conversation> conversations = user.get().getConversation();

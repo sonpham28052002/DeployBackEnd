@@ -42,6 +42,8 @@ class ChatBackEndApplicationTests {
         User cuong = userRepository.findById("N7B7os8xFOMceSxRSIzQlkwr3N43").get();
         // lay user leon
         User leon = userRepository.findById("yGjQT5o0sleSmjHVDHT24SS8FAB2").get();
+        User sonnguyen = userRepository.findById("RGpCgF0lR1aGVcttckhAbBHWcSp2").get();
+
         // conversation sơn
         List<Conversation> conversationsSon = new ArrayList<>();
         // conversation cường
@@ -52,7 +54,7 @@ class ChatBackEndApplicationTests {
         // tạo conversation group
         List<Message> messageListGroup = new ArrayList<>();
 
-        for (int i = 0; i < 12; i++) {
+        for (int i = 0; i < 20; i++) {
             MessageText messageText = new MessageText();
             messageText.setMessageType(MessageType.Text);
             messageText.setContent(faker.text().text());
@@ -60,10 +62,11 @@ class ChatBackEndApplicationTests {
             messageText.setSeen(List.of(User.builder().id(sonpham.getId()).build(), User.builder().id(cuong.getId()).build(), User.builder().id(leon.getId()).build()));
             if (i % 2 == 0) {
                 messageText.setSender(User.builder().id(cuong.getId()).build());
-            }
-            else if(i%3==0) {
+            } else if (i % 3 == 0) {
                 messageText.setSender(User.builder().id(leon.getId()).build());
-            }else{
+            } else if (i % 5 == 0) {
+                messageText.setSender(User.builder().id(sonnguyen.getId()).build());
+            } else {
                 messageText.setSender(User.builder().id(sonpham.getId()).build());
             }
             messageText.setSenderDate(LocalDateTime.now());
@@ -77,19 +80,31 @@ class ChatBackEndApplicationTests {
         conversationGroup.setMessages(messageListGroup);
         conversationGroup.setMembers(List.of(
                 Member.builder()
-                .member(User.builder().id(sonpham.getId()).build())
-                .memberType(MemberType.ACTIVE).build(),
+                        .member(User.builder().id(sonpham.getId()).build())
+                        .memberType(MemberType.ACTIVE).build(),
                 Member.builder()
                         .member(User.builder().id(cuong.getId()).build())
                         .memberType(MemberType.ACTIVE).build(),
                 Member.builder()
                         .member(User.builder().id(leon.getId()).build())
+                        .memberType(MemberType.ACTIVE).build(),
+                Member.builder()
+                        .member(User.builder().id(sonnguyen.getId()).build())
                         .memberType(MemberType.ACTIVE).build()
+        ));
+        conversationGroup.setLeaderTeam(User.builder().id(sonpham.getId()).build());
+        conversationGroup.setSubTeamList(List.of(
+                User.builder().id(cuong.getId()).build(),
+                User.builder().id(leon.getId()).build(),
+                User.builder().id(sonnguyen.getId()).build()
         ));
         conversationGroup.setUpdateLast(LocalDateTime.now());
         conversationGroup.setLastMessage();
         System.out.println(conversationGroup.getMessages());
 
+
+        sonnguyen.setConversation(List.of(conversationGroup));
+        userRepository.save(sonnguyen);
 
         List<Message> messageList = new ArrayList<>();
         for (int i = 0; i < 3; i++) {
@@ -211,7 +226,7 @@ class ChatBackEndApplicationTests {
             messageList.add(messageText);
         }
         // danh sách trò chuyện của sơn nguyễn
-        List<Conversation> conversationsnguyen = new ArrayList<>();
+        List<Conversation> conversationsnguyen = sonnguyen.getConversation();
         //  trò chuyện của sơn nguyễn - sonpham
         ConversationSingle conversationSingleSonLeon = new ConversationSingle();
         conversationSingleSonLeon.setMessages(messageList);
@@ -255,5 +270,12 @@ class ChatBackEndApplicationTests {
             System.out.println(friend);
         }
         userRepository.save(son);
+    }
+
+    @Test
+    void aahi() {
+        User sonnguyen = userRepository.findById("RGpCgF0lR1aGVcttckhAbBHWcSp2").get();
+        sonnguyen.setDOB(LocalDate.of(2002, 5, 11));
+        userRepository.save(sonnguyen);
     }
 }
