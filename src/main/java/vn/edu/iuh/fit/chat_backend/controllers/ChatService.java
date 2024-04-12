@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
+import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
 import vn.edu.iuh.fit.chat_backend.models.*;
@@ -247,6 +248,15 @@ public class ChatService {
         simpMessagingTemplate.convertAndSendToUser(sendQR.getIp(), "/QR", sendQR);
         System.out.println(sendQR);
         return sendQR;
+    }
+    @MessageMapping("/video")
+    @SendTo("/video-call")
+    public String sendVideo(String videoData) {
+        // Xử lý dữ liệu video và gửi đến tất cả các subscriber
+        System.out.println(videoData);
+        simpMessagingTemplate.convertAndSendToUser("video", "/nhan", videoData);
+
+        return videoData;
     }
 
 }
