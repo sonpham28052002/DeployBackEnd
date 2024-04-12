@@ -12,6 +12,7 @@ import vn.edu.iuh.fit.chat_backend.types.MemberType;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@ToString
 public class Member {
     @JsonIgnoreProperties(value = {"conversation", "friendList", "gender", "coverImage", "bio", "phone", "logOut", "dob", "phone",})
     private User member;

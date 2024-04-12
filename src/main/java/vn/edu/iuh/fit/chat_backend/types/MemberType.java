@@ -1,11 +1,18 @@
 package vn.edu.iuh.fit.chat_backend.types;
 
-public enum MemberType {
-    ACTIVE("active"),
-    INACTIVE("inactive");
-    private final String type;
+import lombok.Getter;
 
-    MemberType(String type) {
-        this.type= type;
+@Getter
+public enum MemberType {
+    GROUP_LEADER("Group Leader"),
+    DEPUTY_LEADER("Deputy Leader"),
+    MEMBER("Member"),
+    LEFT_MEMBER("Left Member");
+
+    private final String roleName;
+
+    MemberType(String roleName) {
+        this.roleName = roleName;
     }
+
 }

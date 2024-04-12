@@ -49,6 +49,22 @@ public class UserController {
         return user;
     }
 
+    @GetMapping("/getFriendRequestListByOwnerId")
+    public List<FriendRequest> getFriendRequestListByOwnerId(@RequestParam String owner){
+        Optional<User> user = userRepository.findById(owner);
+        for (FriendRequest friendRequest:user.get().getFriendRequests()) {
+            if (!user.get().equals(friendRequest.getSender())){
+                User user1 = userRepository.findById(friendRequest.getSender().getId()).get();
+                friendRequest.setSender(User.builder().id(user1.getId()).userName(user1.getUserName()).avt(user1.getAvt()).build());
+            }else{
+                User user1 = userRepository.findById(friendRequest.getReceiver().getId()).get();
+                friendRequest.setReceiver(User.builder().id(user1.getId()).userName(user1.getUserName()).avt(user1.getAvt()).build());
+            }
+        }
+        return user.get().getFriendRequests();
+    }
+
+
     @GetMapping("/getInfoUserById")
     public Optional<User> getInfoUserById(@RequestParam String id) {
         Optional<User> user = userRepository.findById(id);

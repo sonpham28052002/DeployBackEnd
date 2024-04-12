@@ -81,23 +81,18 @@ class ChatBackEndApplicationTests {
         conversationGroup.setMembers(List.of(
                 Member.builder()
                         .member(User.builder().id(sonpham.getId()).build())
-                        .memberType(MemberType.ACTIVE).build(),
+                        .memberType(MemberType.GROUP_LEADER).build(),
                 Member.builder()
                         .member(User.builder().id(cuong.getId()).build())
-                        .memberType(MemberType.ACTIVE).build(),
+                        .memberType(MemberType.DEPUTY_LEADER).build(),
                 Member.builder()
                         .member(User.builder().id(leon.getId()).build())
-                        .memberType(MemberType.ACTIVE).build(),
+                        .memberType(MemberType.MEMBER).build(),
                 Member.builder()
                         .member(User.builder().id(sonnguyen.getId()).build())
-                        .memberType(MemberType.ACTIVE).build()
+                        .memberType(MemberType.DEPUTY_LEADER).build()
         ));
-        conversationGroup.setLeaderTeam(User.builder().id(sonpham.getId()).build());
-        conversationGroup.setSubTeamList(List.of(
-                User.builder().id(cuong.getId()).build(),
-                User.builder().id(leon.getId()).build(),
-                User.builder().id(sonnguyen.getId()).build()
-        ));
+
         conversationGroup.setUpdateLast(LocalDateTime.now());
         conversationGroup.setLastMessage();
         System.out.println(conversationGroup.getMessages());
@@ -274,8 +269,10 @@ class ChatBackEndApplicationTests {
 
     @Test
     void aahi() {
-        User sonnguyen = userRepository.findById("RGpCgF0lR1aGVcttckhAbBHWcSp2").get();
-        sonnguyen.setDOB(LocalDate.of(2002, 5, 11));
-        userRepository.save(sonnguyen);
+       List<User> userList = userRepository.findAll();
+        for (User user:userList) {
+            user.setFriendRequests(new ArrayList<>());
+            userRepository.save(user);
+        }
     }
 }

@@ -64,7 +64,7 @@ public class MessageService {
         for (Conversation conversation:conversationList) {
             if (conversation instanceof ConversationGroup && ((ConversationGroup) conversation).getIdGroup().trim().equals(idGroup.trim())){
                 for (Member member:((ConversationGroup) conversation).getMembers()) {
-                    if (member.getMemberType().equals(MemberType.ACTIVE)){
+                    if (!member.getMemberType().equals(MemberType.LEFT_MEMBER)){
                         addMessageGroupForMemberReceiver(message,idGroup,member.getMember().getId(), conversation );
                         membersActive.add(member);
                     }
@@ -186,9 +186,15 @@ public class MessageService {
                 for (Conversation conversation:conversations) {
                     if (conversation instanceof ConversationGroup && ((ConversationGroup) conversation).getIdGroup().trim().equals(idGroup.trim())){
                             List<Message> messageList = conversation.getMessages();
-                            System.out.println(messageList.indexOf(message));
-                            messageList.remove(messageList.indexOf(message));
-                            conversation.setLastMessage();
+                            int index = messageList.indexOf(message);
+                            messageList.remove(index);
+                            if(index == 0){
+                                conversation.setLastMessage(null);
+
+                            }else{
+                                conversation.setLastMessage();
+
+                            }
                             userRepository.save(user.get());
                             return true;
                     }

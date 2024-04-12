@@ -12,12 +12,13 @@ import org.springframework.stereotype.Controller;
 import vn.edu.iuh.fit.chat_backend.models.*;
 import vn.edu.iuh.fit.chat_backend.services.MessageService;
 import vn.edu.iuh.fit.chat_backend.services.UserService;
+import vn.edu.iuh.fit.chat_backend.types.MemberType;
 import vn.edu.iuh.fit.chat_backend.types.MessageType;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Objects;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Controller
 public class ChatService {
@@ -43,39 +44,39 @@ public class ChatService {
     public String retrieveMessage(@Payload MessageText messageText, @Payload MessageFile messageFile) {
         if (messageText.getContent() == null) {
             int index = messageFile.getReceiver().getId().indexOf("_");
-            if (index == -1){
+            if (index == -1) {
                 System.out.println(messageFile);
                 Message messageNew = messageService.retrieveMessageSingle(messageFile);
                 simpMessagingTemplate.convertAndSendToUser(messageFile.getReceiver().getId(), "/retrieveMessage", messageNew);
                 simpMessagingTemplate.convertAndSendToUser(messageFile.getSender().getId(), "/retrieveMessage", messageNew);
-            }else{
-                String idGroup =messageFile.getReceiver().getId().substring(messageFile.getReceiver().getId().indexOf("_")+1,messageFile.getReceiver().getId().length());
-                List<Member> memberList = messageService.retrieveMessageGroup(messageFile,idGroup);
-                if (memberList.size() != 0){
-                    for (Member member:memberList) {
+            } else {
+                String idGroup = messageFile.getReceiver().getId().substring(messageFile.getReceiver().getId().indexOf("_") + 1, messageFile.getReceiver().getId().length());
+                List<Member> memberList = messageService.retrieveMessageGroup(messageFile, idGroup);
+                if (memberList.size() != 0) {
+                    for (Member member : memberList) {
                         messageFile.setMessageType(MessageType.RETRIEVE);
                         simpMessagingTemplate.convertAndSendToUser(member.getMember().getId().trim(), "/retrieveMessage", messageFile);
                     }
-                }else{
+                } else {
                     simpMessagingTemplate.convertAndSendToUser(messageFile.getSender().getId().trim(), "/retrieveMessage", messageFile);
                 }
             }
         } else {
             int index = messageText.getReceiver().getId().indexOf("_");
-            if (index == -1){
+            if (index == -1) {
                 System.out.println(messageText);
                 Message messageNew = messageService.retrieveMessageSingle(messageText);
                 simpMessagingTemplate.convertAndSendToUser(messageText.getReceiver().getId(), "/retrieveMessage", messageNew);
                 simpMessagingTemplate.convertAndSendToUser(messageText.getSender().getId(), "/retrieveMessage", messageNew);
-            }else{
-                String idGroup =messageText.getReceiver().getId().substring(messageText.getReceiver().getId().indexOf("_")+1,messageText.getReceiver().getId().length());
-                List<Member> memberList = messageService.retrieveMessageGroup(messageText,idGroup);
-                if (memberList.size() != 0){
-                    for (Member member:memberList) {
+            } else {
+                String idGroup = messageText.getReceiver().getId().substring(messageText.getReceiver().getId().indexOf("_") + 1, messageText.getReceiver().getId().length());
+                List<Member> memberList = messageService.retrieveMessageGroup(messageText, idGroup);
+                if (memberList.size() != 0) {
+                    for (Member member : memberList) {
                         messageText.setMessageType(MessageType.RETRIEVE);
                         simpMessagingTemplate.convertAndSendToUser(member.getMember().getId().trim(), "/retrieveMessage", messageText);
                     }
-                }else{
+                } else {
                     simpMessagingTemplate.convertAndSendToUser(messageText.getSender().getId().trim(), "/retrieveMessage", messageText);
                 }
             }
@@ -93,21 +94,21 @@ public class ChatService {
         if (Group.trim().equals("")) {
             if (messageText.getContent() == null) {
                 System.out.println(messageFile);
-                messageService.deleteMessageSingle(messageFile, ownerId,Group);
+                messageService.deleteMessageSingle(messageFile, ownerId, Group);
                 simpMessagingTemplate.convertAndSendToUser(ownerId, "/deleteMessage", messageFile);
             } else {
                 System.out.println(messageText.getReceiver());
-                messageService.deleteMessageSingle(messageText, ownerId,Group);
+                messageService.deleteMessageSingle(messageText, ownerId, Group);
                 simpMessagingTemplate.convertAndSendToUser(ownerId, "/deleteMessage", messageText);
             }
         } else {
             if (messageText.getContent() == null) {
                 System.out.println(messageFile);
-                messageService.deleteMessageSingle(messageFile, ownerId,Group);
+                messageService.deleteMessageSingle(messageFile, ownerId, Group);
                 simpMessagingTemplate.convertAndSendToUser(ownerId, "/deleteMessage", messageFile);
             } else {
                 System.out.println(messageText.getReceiver());
-                messageService.deleteMessageSingle(messageText, ownerId,Group);
+                messageService.deleteMessageSingle(messageText, ownerId, Group);
                 simpMessagingTemplate.convertAndSendToUser(ownerId, "/deleteMessage", messageText);
             }
         }
@@ -119,20 +120,19 @@ public class ChatService {
 
         if (messageTexts.get(0).getContent() == null) {
             for (MessageFile messageFile : messageFiles) {
-<<<<<<< HEAD
                 int index = messageFile.getReceiver().getId().indexOf("_");
-                if (index == -1){
+                if (index == -1) {
                     messageFile.setSenderDate(LocalDateTime.now());
                     messageFile.setId(UUID.randomUUID().toString());
                     messageService.insertMessageSingleSender(messageFile);
                     messageService.insertMessageSingleReceiver(messageFile);
                     simpMessagingTemplate.convertAndSendToUser(messageFile.getReceiver().getId() + "", "/singleChat", messageFile);
                     simpMessagingTemplate.convertAndSendToUser(messageFile.getSender().getId() + "", "/singleChat", messageFile);
-                }else{
-                    String idGroup =messageFile.getReceiver().getId().substring(messageFile.getReceiver().getId().indexOf("_")+1,messageFile.getReceiver().getId().length());
+                } else {
+                    String idGroup = messageFile.getReceiver().getId().substring(messageFile.getReceiver().getId().indexOf("_") + 1, messageFile.getReceiver().getId().length());
                     List<Member> memberList = messageService.insertMessageGroup(messageFile, idGroup);
-                    if (memberList.size() !=0) {
-                        for (Member member:memberList) {
+                    if (memberList.size() != 0) {
+                        for (Member member : memberList) {
                             messageFile.setId(UUID.randomUUID().toString());
                             simpMessagingTemplate.convertAndSendToUser(member.getMember().getId() + "", "/groupChat", messageFile);
                         }
@@ -145,20 +145,20 @@ public class ChatService {
         } else {
 
             for (MessageText messageText : messageTexts) {
-                System.out.println("user: "+messageText.getReceiver().getId());
+                System.out.println("user: " + messageText.getReceiver().getId());
                 int index = messageText.getReceiver().getId().indexOf("_");
-                if (index == -1){
+                if (index == -1) {
                     messageText.setSenderDate(LocalDateTime.now());
                     messageText.setId(UUID.randomUUID().toString());
                     messageService.insertMessageSingleSender(messageText);
                     messageService.insertMessageSingleReceiver(messageText);
                     simpMessagingTemplate.convertAndSendToUser(messageText.getReceiver().getId() + "", "/singleChat", messageText);
                     simpMessagingTemplate.convertAndSendToUser(messageText.getSender().getId() + "", "/singleChat", messageText);
-                }else{
-                    String idGroup =messageText.getReceiver().getId().substring(messageText.getReceiver().getId().indexOf("_")+1,messageText.getReceiver().getId().length());
+                } else {
+                    String idGroup = messageText.getReceiver().getId().substring(messageText.getReceiver().getId().indexOf("_") + 1, messageText.getReceiver().getId().length());
                     List<Member> memberList = messageService.insertMessageGroup(messageText, idGroup);
-                    if (memberList.size() !=0) {
-                        for (Member member:memberList) {
+                    if (memberList.size() != 0) {
+                        for (Member member : memberList) {
                             messageText.setId(UUID.randomUUID().toString());
                             simpMessagingTemplate.convertAndSendToUser(member.getMember().getId() + "", "/groupChat", messageText);
                         }
@@ -166,32 +166,13 @@ public class ChatService {
                         simpMessagingTemplate.convertAndSendToUser(messageText.getSender().getId() + "", "/groupChat", messageText);
                     }
                 }
-
-=======
-                messageFile.setSenderDate(LocalDateTime.now());
-                messageService.insertMessageSingleSender(messageFile);
-                messageService.insertMessageSingleReceiver(messageFile);
-                messageFile.setId(UUID.randomUUID().toString());
-                simpMessagingTemplate.convertAndSendToUser(messageFile.getReceiver().getId() + "", "/singleChat", messageFile);
-                simpMessagingTemplate.convertAndSendToUser(messageFile.getSender().getId() + "", "/singleChat", messageFile);
-            }
-            return null;
-        } else {
-            for (MessageText messageText : messageTexts) {
-                messageText.setSenderDate(LocalDateTime.now());
-                messageService.insertMessageSingleSender(messageText);
-                messageService.insertMessageSingleReceiver(messageText);
-                messageText.setId(UUID.randomUUID().toString());
-                simpMessagingTemplate.convertAndSendToUser(messageText.getReceiver().getId() + "", "/singleChat", messageText);
-                simpMessagingTemplate.convertAndSendToUser(messageText.getSender().getId() + "", "/singleChat", messageText);
->>>>>>> a16d8d700dba856b2d1171d21de0947e4d5bbf55
             }
             return null;
         }
     }
 
     @MessageMapping("/create-Group")
-    public void createGroup(@Payload List<User> members){
+    public void createGroup(@Payload List<User> members) {
 
     }
 
@@ -220,8 +201,8 @@ public class ChatService {
             System.out.println(idG);
             if (messageText.getContent() == null) {
                 List<Member> memberList = messageService.insertMessageGroup(messageFile, idG);
-                if (memberList.size() !=0) {
-                    for (Member member:memberList) {
+                if (memberList.size() != 0) {
+                    for (Member member : memberList) {
                         simpMessagingTemplate.convertAndSendToUser(member.getMember().getId() + "", "/groupChat", messageFile);
                     }
                 } else {
@@ -230,8 +211,8 @@ public class ChatService {
                 }
             } else {
                 List<Member> memberList = messageService.insertMessageGroup(messageText, idG);
-                if (memberList.size() !=0) {
-                    for (Member member:memberList) {
+                if (memberList.size() != 0) {
+                    for (Member member : memberList) {
                         simpMessagingTemplate.convertAndSendToUser(member.getMember().getId() + "", "/groupChat", messageText);
                     }
                 } else {
@@ -261,28 +242,62 @@ public class ChatService {
 
     @MessageMapping("/request-add-friend")
     public User requestAddFriend(@Payload String node) throws JsonProcessingException {
-        //{ id, userName, avt, receiverId}
         ObjectMapper mapper = new ObjectMapper();
         JsonNode jsonNode = mapper.readTree(node);
-        String senderId = jsonNode.asText("id");
-        String senderUserName = jsonNode.asText("userName");
-        String senderAvt = jsonNode.asText("avt");
-        String receiverId = jsonNode.asText("receiverId");
-        boolean result = userService.addRequestAddFriend(senderId, receiverId);
-        if (result) {
-            User user = User.builder().id(senderId).userName(senderUserName).avt(senderAvt).build();
-            simpMessagingTemplate.convertAndSendToUser(receiverId, "/requestAddFriend", user);
-            return user;
+        String senderId = jsonNode.get("id").asText();
+        String receiverId = jsonNode.get("receiverId").asText();
+
+        FriendRequest result = userService.addRequestAddFriend(senderId, receiverId);
+        if (result != null) {
+            simpMessagingTemplate.convertAndSendToUser(receiverId, "/requestAddFriend", result);
+            simpMessagingTemplate.convertAndSendToUser(senderId, "/requestAddFriend", result);
         }
         return null;
     }
 
     @MessageMapping("/accept-friend-request")
     public FriendRequest acceptFriendRequest(@Payload FriendRequest friendRequest) {
+        System.out.println(friendRequest);
         if (userService.addFriend(friendRequest.getSender().getId(), friendRequest.getReceiver().getId())) {
             simpMessagingTemplate.convertAndSendToUser(friendRequest.getSender().getId(), "/acceptAddFriend", friendRequest);
             simpMessagingTemplate.convertAndSendToUser(friendRequest.getReceiver().getId(), "/acceptAddFriend", friendRequest);
             return friendRequest;
+        }
+        return null;
+    }
+
+    @MessageMapping("/unfriend")
+    public Friend unFriend(@Payload String node) throws JsonProcessingException {
+        System.out.println(node);
+
+        ObjectMapper mapper = new ObjectMapper();
+        JsonNode jsonNode = mapper.readTree(node);
+        String ownerId = jsonNode.get("ownerId").asText();
+        String userId = jsonNode.get("userId").asText();
+        Friend friend = userService.Unfriend(ownerId, userId);
+        System.out.println(friend);
+        if (friend != null) {
+            simpMessagingTemplate.convertAndSendToUser(ownerId, "/unfriend", friend);
+            simpMessagingTemplate.convertAndSendToUser(userId, "/unfriend", friend);
+            return friend;
+        }
+        return null;
+    }
+
+    @MessageMapping("/createGroup")
+    public ConversationGroup createGroup(@Payload ConversationGroup conversationGroup) throws JsonProcessingException {
+        System.out.println(conversationGroup);
+        if (!conversationGroup.getMembers().isEmpty()) {
+            Member userCreate = conversationGroup.getMembers().stream()
+                    .filter(item -> item.getMemberType().equals(MemberType.GROUP_LEADER))
+                    .findFirst()
+                    .orElse(null);
+            if (userCreate != null) {
+                ConversationGroup groupRS = userService.createGroup(conversationGroup, userCreate);
+                System.out.println(userCreate.getMember().getId());
+                simpMessagingTemplate.convertAndSendToUser(userCreate.getMember().getId(), "/createGroup", new Conversation());
+                return groupRS;
+            }
         }
         return null;
     }
@@ -297,11 +312,6 @@ public class ChatService {
         return null;
     }
 
-    @MessageMapping("/private-group-message")
-    public Message recMessageGroup(@Payload Message message) {
-//        simpMessagingTemplate.convertAndSendToUser(message.getSender().getId(), "/groupChat", message);
-        return message;
-    }
 
     @MessageMapping("QR")
     public SendQR recMessageQR(@Payload SendQR sendQR) {
@@ -309,6 +319,7 @@ public class ChatService {
         System.out.println(sendQR);
         return sendQR;
     }
+
     @MessageMapping("/video")
     @SendTo("/video-call")
     public String sendVideo(String videoData) {
