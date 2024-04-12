@@ -37,6 +37,7 @@ public class User {
     private LocalDateTime logOut;
     private List<Conversation> conversation;
     private List<Friend> friendList;
+    private List<FriendRequest> friendRequests;
 
     @Override
     public boolean equals(Object o) {
