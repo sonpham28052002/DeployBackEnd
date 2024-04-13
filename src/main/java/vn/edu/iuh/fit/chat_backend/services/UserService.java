@@ -81,11 +81,30 @@ public class UserService {
         Friend friendRS = null;
         if (index != -1) {
             friendRS = friendList.get(index);
-            System.out.println(friendRS);
             friendList.remove(index);
             user.get().setFriendList(friendList);
+            userRepository.save(user.get());
         }
         return friendRS;
+    }
+
+    public ConversationGroup disbandConversation(ConversationGroup conversationGroup){
+        try {
+            for (Member member:conversationGroup.getMembers()) {
+                User user =userRepository.findById(member.getMember().getId()).get();
+                for (Conversation conversation:user.getConversation()) {
+                    if (conversation instanceof ConversationGroup && ((ConversationGroup) conversation).getIdGroup().trim().equals(conversationGroup.getIdGroup().trim())){
+                        ((ConversationGroup) conversation).setStatus(GroupStatus.DISBANDED);
+                        break;
+                    }
+                }
+            }
+            conversationGroup.setStatus(GroupStatus.DISBANDED);
+            return conversationGroup;
+        }catch (Exception  exception){
+            exception.printStackTrace();
+        }
+        return null;
     }
 
     public Optional<User> getUserByPhone(String phone) {
@@ -195,7 +214,11 @@ public class UserService {
             newConversation.setUpdateLast(LocalDateTime.now());
 
             userCreate.getConversation().add(newConversation);
-            userRepository.save(userCreate);
+            for (Member member1:newConversation.getMembers()) {
+                User user = userRepository.findById(member1.getMember().getId()).get();
+                user.getConversation().add(newConversation);
+                userRepository.save(user);
+            }
             return newConversation;
         } catch (Exception exception) {
             exception.printStackTrace();

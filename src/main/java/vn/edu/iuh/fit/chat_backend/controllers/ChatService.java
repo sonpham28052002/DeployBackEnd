@@ -12,6 +12,7 @@ import org.springframework.stereotype.Controller;
 import vn.edu.iuh.fit.chat_backend.models.*;
 import vn.edu.iuh.fit.chat_backend.services.MessageService;
 import vn.edu.iuh.fit.chat_backend.services.UserService;
+import vn.edu.iuh.fit.chat_backend.types.GroupStatus;
 import vn.edu.iuh.fit.chat_backend.types.MemberType;
 import vn.edu.iuh.fit.chat_backend.types.MessageType;
 
@@ -268,7 +269,6 @@ public class ChatService {
 
     @MessageMapping("/unfriend")
     public Friend unFriend(@Payload String node) throws JsonProcessingException {
-        System.out.println(node);
 
         ObjectMapper mapper = new ObjectMapper();
         JsonNode jsonNode = mapper.readTree(node);
@@ -284,6 +284,19 @@ public class ChatService {
         return null;
     }
 
+    @MessageMapping("/disbandConversation")
+    public void disbandConversation(@Payload ConversationGroup conversationGroup){
+        System.out.println(conversationGroup);
+        ConversationGroup group=userService.disbandConversation(conversationGroup);
+        if (group != null) {
+            for (Member member:conversationGroup.getMembers()) {
+                simpMessagingTemplate.convertAndSendToUser(member.getMember().getId(), "/disbandConversation", group);
+            }
+        }
+    }
+
+
+
     @MessageMapping("/createGroup")
     public ConversationGroup createGroup(@Payload ConversationGroup conversationGroup) throws JsonProcessingException {
         System.out.println(conversationGroup);
@@ -294,9 +307,12 @@ public class ChatService {
                     .orElse(null);
             if (userCreate != null) {
                 ConversationGroup groupRS = userService.createGroup(conversationGroup, userCreate);
-                System.out.println(userCreate.getMember().getId());
-                simpMessagingTemplate.convertAndSendToUser(userCreate.getMember().getId(), "/createGroup", new Conversation());
+                for (Member member:conversationGroup.getMembers()) {
+                    simpMessagingTemplate.convertAndSendToUser(member.getMember().getId(), "/createGroup", groupRS);
+                }
                 return groupRS;
+            }else {
+                simpMessagingTemplate.convertAndSendToUser(userCreate.getMember().getId(), "/createGroup", new Conversation());
             }
         }
         return null;

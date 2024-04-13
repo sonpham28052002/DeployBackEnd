@@ -1,6 +1,5 @@
 package vn.edu.iuh.fit.chat_backend.models;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

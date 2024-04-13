@@ -1,6 +1,5 @@
 package vn.edu.iuh.fit.chat_backend.controllers;
 
-import com.azure.core.annotation.Put;
 import net.datafaker.Faker;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;

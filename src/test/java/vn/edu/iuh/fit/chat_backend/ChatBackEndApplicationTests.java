@@ -11,10 +11,7 @@ import vn.edu.iuh.fit.chat_backend.repositories.UserRepository;
 import net.datafaker.Faker;
 import vn.edu.iuh.fit.chat_backend.services.MessageService;
 import vn.edu.iuh.fit.chat_backend.services.UserService;
-import vn.edu.iuh.fit.chat_backend.types.ConversationType;
-import vn.edu.iuh.fit.chat_backend.types.Gender;
-import vn.edu.iuh.fit.chat_backend.types.MemberType;
-import vn.edu.iuh.fit.chat_backend.types.MessageType;
+import vn.edu.iuh.fit.chat_backend.types.*;
 
 import java.security.Timestamp;
 import java.sql.Time;
@@ -77,6 +74,7 @@ class ChatBackEndApplicationTests {
         conversationGroup.setAvtGroup(faker.internet().image());
         conversationGroup.setNameGroup(faker.company().name());
         conversationGroup.setConversationType(ConversationType.group);
+        conversationGroup.setStatus(GroupStatus.ACTIVE);
         conversationGroup.setMessages(messageListGroup);
         conversationGroup.setMembers(List.of(
                 Member.builder()
