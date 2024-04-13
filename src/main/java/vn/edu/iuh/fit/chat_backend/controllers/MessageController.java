@@ -1,13 +1,11 @@
 package vn.edu.iuh.fit.chat_backend.controllers;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
-import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.web.bind.annotation.*;
-import vn.edu.iuh.fit.chat_backend.models.Conversation;
-import vn.edu.iuh.fit.chat_backend.models.ConversationSingle;
-import vn.edu.iuh.fit.chat_backend.models.Message;
-import vn.edu.iuh.fit.chat_backend.models.User;
+import vn.edu.iuh.fit.chat_backend.models.*;
 import vn.edu.iuh.fit.chat_backend.repositories.UserRepository;
 import vn.edu.iuh.fit.chat_backend.services.MessageService;
 
@@ -40,6 +38,36 @@ public class MessageController {
         }
         return new ArrayList<>();
     }
+    @GetMapping("/getMessageAndMemberByIdSenderAndIdGroup")
+    public List<Message> getMessageAndMemberByIdSenderAndIdGroup(@RequestParam String idSender, @RequestParam String idGroup) {
+        Optional<User> sender = userRepository.findById(idSender);
+        if (sender.isEmpty()) {
+            return new ArrayList<>();
+        }
+        for (Conversation conversation : sender.get().getConversation()) {
+            if (conversation instanceof ConversationGroup && ((ConversationGroup) conversation).getIdGroup().equals(idGroup)) {
+                return conversation.getMessages();
+            }
+        }
+        return new ArrayList<>();
+    }
 
+    @GetMapping("/getMemberByIdSenderAndIdGroup")
+    public List<Member> getMemberByIdSenderAndIdGroup(@RequestParam String idSender, @RequestParam String idGroup) {
+        Optional<User> sender = userRepository.findById(idSender);
+        if (sender.isEmpty()) {
+            return new ArrayList<>();
+        }
+        for (Conversation conversation : sender.get().getConversation()) {
+            if (conversation instanceof ConversationGroup && ((ConversationGroup) conversation).getIdGroup().equals(idGroup)) {
+                for (Member member:((ConversationGroup) conversation).getMembers()) {
+                    User user = userRepository.findById(member.getMember().getId()).get();
+                    member.setMember(user);
+                }
+                return ((ConversationGroup) conversation).getMembers();
+            }
+        }
+        return new ArrayList<>();
+    }
 
 }

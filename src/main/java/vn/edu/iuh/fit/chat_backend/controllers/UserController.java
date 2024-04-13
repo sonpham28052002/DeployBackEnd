@@ -1,12 +1,12 @@
 package vn.edu.iuh.fit.chat_backend.controllers;
 
-import com.azure.core.annotation.Put;
 import net.datafaker.Faker;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import vn.edu.iuh.fit.chat_backend.models.*;
 import vn.edu.iuh.fit.chat_backend.repositories.UserRepository;
+import vn.edu.iuh.fit.chat_backend.services.UserService;
 
 import java.util.*;
 
@@ -15,10 +15,19 @@ import java.util.*;
 public class UserController {
     @Autowired
     private UserRepository userRepository;
-
+    @Autowired
+    private UserService userService;
     @GetMapping("/all")
     public List<User> getAll() {
         return userRepository.findAll();
+    }
+
+    @GetMapping("/getUserByPhone")
+    public Optional<User> getUserByPhone(@RequestParam String phone) {
+        if (phone.indexOf("0") !=-1){
+            phone = phone.substring(0 , phone.indexOf("0")) + phone.substring(phone.indexOf("0")+1 ,phone.length());
+        }
+        return userService.getUserByPhone(phone);
     }
 
     @GetMapping("/getUserById")
@@ -32,13 +41,28 @@ public class UserController {
                 ((ConversationSingle) conversation).setUser(userConversation);
             }
         }
-        System.out.println(user.get().getFriendList());
         for (Friend friend:user.get().getFriendList()) {
             User user1 = userRepository.findById(friend.getUser().getId()).get();
             friend.setUser(user1);
         }
         return user;
     }
+
+    @GetMapping("/getFriendRequestListByOwnerId")
+    public List<FriendRequest> getFriendRequestListByOwnerId(@RequestParam String owner){
+        Optional<User> user = userRepository.findById(owner);
+        for (FriendRequest friendRequest:user.get().getFriendRequests()) {
+            if (!user.get().equals(friendRequest.getSender())){
+                User user1 = userRepository.findById(friendRequest.getSender().getId()).get();
+                friendRequest.setSender(User.builder().id(user1.getId()).userName(user1.getUserName()).avt(user1.getAvt()).build());
+            }else{
+                User user1 = userRepository.findById(friendRequest.getReceiver().getId()).get();
+                friendRequest.setReceiver(User.builder().id(user1.getId()).userName(user1.getUserName()).avt(user1.getAvt()).build());
+            }
+        }
+        return user.get().getFriendRequests();
+    }
+
 
     @GetMapping("/getInfoUserById")
     public Optional<User> getInfoUserById(@RequestParam String id) {

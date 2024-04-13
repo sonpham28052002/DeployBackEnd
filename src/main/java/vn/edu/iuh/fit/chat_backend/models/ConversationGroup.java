@@ -1,12 +1,12 @@
 package vn.edu.iuh.fit.chat_backend.models;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.springframework.data.annotation.TypeAlias;
 import org.springframework.data.mongodb.core.mapping.Document;
+import vn.edu.iuh.fit.chat_backend.types.GroupStatus;
 
 import java.util.List;
 import java.util.Objects;
@@ -19,15 +19,10 @@ import java.util.Objects;
 @AllArgsConstructor
 public class ConversationGroup extends Conversation {
     private String idGroup;
-    @JsonIgnoreProperties(value = {"conversation", "friendList", "gender", "coverImage", "bio", "phone", "logOut", "dob", "avt", "phone", "userName"})
-    private List<User> members;
+    private List<Member> members;
     private String avtGroup;
     private String nameGroup;
-
-    //    private User leaderTeam;
-//    @JsonIgnoreProperties(value = {"conversation", "friendList", "gender", "coverImage", "bio", "phone", "logOut", "dob", "avt", "phone", "userName"})
-//    private List<User> subTeamList;
-
+    private GroupStatus status;
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
