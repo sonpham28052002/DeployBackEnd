@@ -11,9 +11,7 @@ import vn.edu.iuh.fit.chat_backend.repositories.UserRepository;
 import net.datafaker.Faker;
 import vn.edu.iuh.fit.chat_backend.services.MessageService;
 import vn.edu.iuh.fit.chat_backend.services.UserService;
-import vn.edu.iuh.fit.chat_backend.types.ConversationType;
-import vn.edu.iuh.fit.chat_backend.types.Gender;
-import vn.edu.iuh.fit.chat_backend.types.MessageType;
+import vn.edu.iuh.fit.chat_backend.types.*;
 
 import java.security.Timestamp;
 import java.sql.Time;
@@ -41,6 +39,8 @@ class ChatBackEndApplicationTests {
         User cuong = userRepository.findById("N7B7os8xFOMceSxRSIzQlkwr3N43").get();
         // lay user leon
         User leon = userRepository.findById("yGjQT5o0sleSmjHVDHT24SS8FAB2").get();
+        User sonnguyen = userRepository.findById("RGpCgF0lR1aGVcttckhAbBHWcSp2").get();
+
         // conversation sơn
         List<Conversation> conversationsSon = new ArrayList<>();
         // conversation cường
@@ -51,7 +51,7 @@ class ChatBackEndApplicationTests {
         // tạo conversation group
         List<Message> messageListGroup = new ArrayList<>();
 
-        for (int i = 0; i < 6; i++) {
+        for (int i = 0; i < 20; i++) {
             MessageText messageText = new MessageText();
             messageText.setMessageType(MessageType.Text);
             messageText.setContent(faker.text().text());
@@ -59,6 +59,10 @@ class ChatBackEndApplicationTests {
             messageText.setSeen(List.of(User.builder().id(sonpham.getId()).build(), User.builder().id(cuong.getId()).build(), User.builder().id(leon.getId()).build()));
             if (i % 2 == 0) {
                 messageText.setSender(User.builder().id(cuong.getId()).build());
+            } else if (i % 3 == 0) {
+                messageText.setSender(User.builder().id(leon.getId()).build());
+            } else if (i % 5 == 0) {
+                messageText.setSender(User.builder().id(sonnguyen.getId()).build());
             } else {
                 messageText.setSender(User.builder().id(sonpham.getId()).build());
             }
@@ -70,12 +74,30 @@ class ChatBackEndApplicationTests {
         conversationGroup.setAvtGroup(faker.internet().image());
         conversationGroup.setNameGroup(faker.company().name());
         conversationGroup.setConversationType(ConversationType.group);
+        conversationGroup.setStatus(GroupStatus.ACTIVE);
         conversationGroup.setMessages(messageListGroup);
-        conversationGroup.setMembers(List.of(User.builder().id(sonpham.getId()).build(), User.builder().id(cuong.getId()).build(), User.builder().id(leon.getId()).build()));
+        conversationGroup.setMembers(List.of(
+                Member.builder()
+                        .member(User.builder().id(sonpham.getId()).build())
+                        .memberType(MemberType.GROUP_LEADER).build(),
+                Member.builder()
+                        .member(User.builder().id(cuong.getId()).build())
+                        .memberType(MemberType.DEPUTY_LEADER).build(),
+                Member.builder()
+                        .member(User.builder().id(leon.getId()).build())
+                        .memberType(MemberType.MEMBER).build(),
+                Member.builder()
+                        .member(User.builder().id(sonnguyen.getId()).build())
+                        .memberType(MemberType.DEPUTY_LEADER).build()
+        ));
+
         conversationGroup.setUpdateLast(LocalDateTime.now());
         conversationGroup.setLastMessage();
         System.out.println(conversationGroup.getMessages());
 
+
+        sonnguyen.setConversation(List.of(conversationGroup));
+        userRepository.save(sonnguyen);
 
         List<Message> messageList = new ArrayList<>();
         for (int i = 0; i < 3; i++) {
@@ -197,7 +219,7 @@ class ChatBackEndApplicationTests {
             messageList.add(messageText);
         }
         // danh sách trò chuyện của sơn nguyễn
-        List<Conversation> conversationsnguyen = new ArrayList<>();
+        List<Conversation> conversationsnguyen = sonnguyen.getConversation();
         //  trò chuyện của sơn nguyễn - sonpham
         ConversationSingle conversationSingleSonLeon = new ConversationSingle();
         conversationSingleSonLeon.setMessages(messageList);
@@ -241,5 +263,14 @@ class ChatBackEndApplicationTests {
             System.out.println(friend);
         }
         userRepository.save(son);
+    }
+
+    @Test
+    void aahi() {
+       List<User> userList = userRepository.findAll();
+        for (User user:userList) {
+            user.setFriendRequests(new ArrayList<>());
+            userRepository.save(user);
+        }
     }
 }

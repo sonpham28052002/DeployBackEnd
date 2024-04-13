@@ -2,13 +2,18 @@ package vn.edu.iuh.fit.chat_backend.services;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import vn.edu.iuh.fit.chat_backend.models.Friend;
-import vn.edu.iuh.fit.chat_backend.models.FriendRequest;
-import vn.edu.iuh.fit.chat_backend.models.User;
+import vn.edu.iuh.fit.chat_backend.models.*;
 import vn.edu.iuh.fit.chat_backend.repositories.UserRepository;
+import vn.edu.iuh.fit.chat_backend.types.ConversationType;
+import vn.edu.iuh.fit.chat_backend.types.GroupStatus;
+import vn.edu.iuh.fit.chat_backend.types.MemberType;
+import vn.edu.iuh.fit.chat_backend.types.MessageType;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
 @Service
 public class UserService {
@@ -17,6 +22,7 @@ public class UserService {
 
     /**
      * Kết bạn giữa 2 user
+     *
      * @param userIdA id của người gửi lời mời
      * @param userIdB id của người đồng ý kết bạn
      * @return kết quả thực hiện
@@ -28,13 +34,13 @@ public class UserService {
 
             //add user B
             Friend friendA = new Friend();
-            friendA.setUser(User.builder().id(userB.getId()).avt(userB.getAvt()).userName(userB.getUserName()).build());
+            friendA.setUser(User.builder().id(userB.getId()).build());
             friendA.setNickName(userB.getUserName());
             friendA.setTag("");
 
             //add user A
             Friend friendB = new Friend();
-            friendB.setUser(User.builder().id(userA.getId()).avt(userA.getAvt()).userName(userA.getUserName()).build());
+            friendB.setUser(User.builder().id(userA.getId()).build());
             friendB.setNickName(userA.getUserName());
             friendB.setTag("");
 
@@ -67,14 +73,56 @@ public class UserService {
         return false;
     }
 
+    public Friend Unfriend(String ownerId, String userId) {
+        Optional<User> user = userRepository.findById(ownerId);
+        List<Friend> friendList = user.get().getFriendList();
+        Friend friend = Friend.builder().user(User.builder().id(userId).build()).build();
+        int index = friendList.indexOf(friend);
+        Friend friendRS = null;
+        if (index != -1) {
+            friendRS = friendList.get(index);
+            friendList.remove(index);
+            user.get().setFriendList(friendList);
+            userRepository.save(user.get());
+        }
+        return friendRS;
+    }
+
+    public ConversationGroup disbandConversation(ConversationGroup conversationGroup){
+        try {
+            for (Member member:conversationGroup.getMembers()) {
+                User user =userRepository.findById(member.getMember().getId()).get();
+                for (Conversation conversation:user.getConversation()) {
+                    if (conversation instanceof ConversationGroup && ((ConversationGroup) conversation).getIdGroup().trim().equals(conversationGroup.getIdGroup().trim())){
+                        ((ConversationGroup) conversation).setStatus(GroupStatus.DISBANDED);
+                        break;
+                    }
+                }
+            }
+            conversationGroup.setStatus(GroupStatus.DISBANDED);
+            return conversationGroup;
+        }catch (Exception  exception){
+            exception.printStackTrace();
+        }
+        return null;
+    }
+
+    public Optional<User> getUserByPhone(String phone) {
+        Optional<User> user = userRepository.getUserByPhone(phone);
+        user.get().setConversation(new ArrayList<>());
+        user.get().setFriendList(new ArrayList<>());
+        return user;
+    }
+
     /**
      * Xoá lời mời kết bạn
-     * @param senderId id của người gửi lời mời
+     *
+     * @param senderId   id của người gửi lời mời
      * @param receiverId id của người nhận được lời mời
      * @return kết quả xử lý
      */
-    public boolean removeFriendRequest(String senderId, String receiverId){
-        try{
+    public boolean removeFriendRequest(String senderId, String receiverId) {
+        try {
             User sender = userRepository.findById(senderId).get();
             User receiver = userRepository.findById(receiverId).get();
 
@@ -89,7 +137,7 @@ public class UserService {
             userRepository.save(sender);
             userRepository.save(receiver);
             return true;
-        }catch (Exception exception){
+        } catch (Exception exception) {
             exception.printStackTrace();
         }
         return false;
@@ -97,39 +145,85 @@ public class UserService {
 
     /**
      * Thêm một yêu cầu kết bạn từ user có id senderId đến user có id receiverId
-     * @param senderId id của người yêu cầu kết bạn
+     *
+     * @param senderId   id của người yêu cầu kết bạn
      * @param receiverId id của người nhận được yêu cầu
      * @return kết quả thêm yêu cầu
      */
-    public boolean addRequestAddFriend(String senderId, String receiverId){
+    public FriendRequest addRequestAddFriend(String senderId, String receiverId) {
         try {
-            User sender = userRepository.findById(senderId).get();
-            User receiver = userRepository.findById(receiverId).get();
+            Optional<User> sender = userRepository.findById(senderId);
+            Optional<User> receiver = userRepository.findById(receiverId);
+            System.out.println(senderId);
+
+            if (receiver.isEmpty() || sender.isEmpty()) {
+                return null;
+            }
 
             FriendRequest friendRequest = new FriendRequest();
-            friendRequest.setSender(User.builder().id(sender.getId()).userName(sender.getUserName()).avt(sender.getAvt()).build());
-            friendRequest.setReceiver(User.builder().id(receiver.getId()).userName(receiver.getUserName()).avt(receiver.getAvt()).build());
+            friendRequest.setSender(User.builder().id(sender.get().getId()).build());
+            friendRequest.setReceiver(User.builder().id(receiver.get().getId()).build());
             friendRequest.setSendDate(LocalDateTime.now());
 
-//            FriendRequest friendRequestReceiver = new FriendRequest();
-//            friendRequestReceiver.setSender(User.builder().id(sender.getId()).userName(sender.getUserName()).avt(sender.getAvt()).build());
-//            friendRequestReceiver.setReceiver(User.builder().id(receiver.getId()).userName(receiver.getUserName()).avt(receiver.getAvt()).build());
-//            friendRequestReceiver.setSendDate(LocalDateTime.now());
-
-            List<FriendRequest> friendRequestListSender = sender.getFriendRequests();
+            List<FriendRequest> friendRequestListSender = sender.get().getFriendRequests();
             friendRequestListSender.add(friendRequest);
-            sender.setFriendRequests(friendRequestListSender);
+            sender.get().setFriendRequests(friendRequestListSender);
 
-            List<FriendRequest> friendRequestListReceiver = receiver.getFriendRequests();
+            List<FriendRequest> friendRequestListReceiver = receiver.get().getFriendRequests();
             friendRequestListReceiver.add(friendRequest);
-            receiver.setFriendRequests(friendRequestListReceiver);
+            receiver.get().setFriendRequests(friendRequestListReceiver);
 
-            userRepository.save(sender);
-            userRepository.save(receiver);
-            return true;
-        } catch (Exception exception){
+            userRepository.save(sender.get());
+            userRepository.save(receiver.get());
+
+            friendRequest.setSender(User.builder().id(sender.get().getId()).userName(sender.get().getUserName()).avt(sender.get().getAvt()).build());
+            friendRequest.setReceiver(User.builder().id(receiver.get().getId()).userName(receiver.get().getUserName()).avt(receiver.get().getAvt()).build());
+            return friendRequest;
+        } catch (Exception exception) {
             exception.printStackTrace();
         }
-        return false;
+        return null;
     }
+
+    public ConversationGroup createGroup(ConversationGroup conversationGroup,Member member ) {
+        User userCreate = userRepository.findById(member.getMember().getId()).get();
+        ConversationGroup newConversation = new ConversationGroup();
+        try {
+            if (conversationGroup.getStatus() == null) {
+                newConversation.setStatus(GroupStatus.ACTIVE);
+            }else{
+                newConversation.setStatus(conversationGroup.getStatus());
+            }
+            if (conversationGroup.getAvtGroup() == null){
+                newConversation.setAvtGroup("https://inkythuatso.com/uploads/images/2023/03/anh-dai-dien-trang-inkythuatso-03-15-23-52.jpg");
+            }else{
+                newConversation.setAvtGroup(conversationGroup.getAvtGroup());
+            }
+            newConversation.setIdGroup(UUID.randomUUID().toString());
+            newConversation.setNameGroup(conversationGroup.getNameGroup());
+            newConversation.setConversationType(ConversationType.group);
+            newConversation.setMessages(new ArrayList<>());
+            List<Member> members = new ArrayList<>();
+            for (Member member1:conversationGroup.getMembers()) {
+                members.add( Member.builder()
+                        .member(User.builder().id(member1.getMember().getId()).build())
+                        .memberType(member1.getMemberType()).build());
+            }
+            newConversation.setMembers(members);
+
+            newConversation.setUpdateLast(LocalDateTime.now());
+
+            userCreate.getConversation().add(newConversation);
+            for (Member member1:newConversation.getMembers()) {
+                User user = userRepository.findById(member1.getMember().getId()).get();
+                user.getConversation().add(newConversation);
+                userRepository.save(user);
+            }
+            return newConversation;
+        } catch (Exception exception) {
+            exception.printStackTrace();
+        }
+        return new ConversationGroup();
+    }
+
 }
