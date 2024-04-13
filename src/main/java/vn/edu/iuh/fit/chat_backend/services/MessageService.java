@@ -59,6 +59,7 @@ public class MessageService {
         if (user.isEmpty()){
             return new ArrayList<>();
         }
+        message.setSenderDate(LocalDateTime.now());
         List<Member> membersActive = new ArrayList<>();
         List<Conversation> conversationList = user.get().getConversation();
         for (Conversation conversation:conversationList) {

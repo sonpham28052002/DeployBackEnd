@@ -98,6 +98,7 @@ public class UserService {
                         break;
                     }
                 }
+                userRepository.save(user);
             }
             conversationGroup.setStatus(GroupStatus.DISBANDED);
             return conversationGroup;

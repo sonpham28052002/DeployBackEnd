@@ -204,20 +204,20 @@ public class ChatService {
                 List<Member> memberList = messageService.insertMessageGroup(messageFile, idG);
                 if (memberList.size() != 0) {
                     for (Member member : memberList) {
-                        simpMessagingTemplate.convertAndSendToUser(member.getMember().getId() + "", "/groupChat", messageFile);
+                        simpMessagingTemplate.convertAndSendToUser(member.getMember().getId() + "", "/groupChat", idGroup);
                     }
                 } else {
-                    simpMessagingTemplate.convertAndSendToUser(messageFile.getSender().getId() + "", "/groupChat", messageFile);
+                    simpMessagingTemplate.convertAndSendToUser(messageFile.getSender().getId() + "", "/groupChat", idGroup);
 
                 }
             } else {
                 List<Member> memberList = messageService.insertMessageGroup(messageText, idG);
                 if (memberList.size() != 0) {
                     for (Member member : memberList) {
-                        simpMessagingTemplate.convertAndSendToUser(member.getMember().getId() + "", "/groupChat", messageText);
+                        simpMessagingTemplate.convertAndSendToUser(member.getMember().getId() + "", "/groupChat", idGroup);
                     }
                 } else {
-                    simpMessagingTemplate.convertAndSendToUser(messageText.getSender().getId() + "", "/groupChat", messageText);
+                    simpMessagingTemplate.convertAndSendToUser(messageText.getSender().getId() + "", "/groupChat", idGroup);
                 }
             }
         } else {
