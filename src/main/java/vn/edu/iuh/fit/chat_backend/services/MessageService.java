@@ -91,6 +91,7 @@ public class MessageService {
             conversationGroup.setMessages(List.of(message));
             conversationGroup.setLastMessage();
             user.get().getConversation().add(conversationGroup);
+            userRepository.save(user.get());
             return true;
 
         }catch (Exception exception){

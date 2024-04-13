@@ -227,4 +227,64 @@ public class UserService {
         return new ConversationGroup();
     }
 
+
+    public ConversationGroup grantRoleMember(ConversationGroup conversationGroup){
+        try{
+            for (Member member:conversationGroup.getMembers()) {
+                User user = userRepository.findById(member.getMember().getId()).get();
+                List<Conversation> conversations = user.getConversation();
+                int index = 0;
+                for (Conversation conversation:conversations) {
+                    if (conversation instanceof ConversationGroup && ((ConversationGroup) conversation).getIdGroup().trim().equals(conversationGroup.getIdGroup())){
+                        ((ConversationGroup) conversation).setMembers(conversationGroup.getMembers());
+                        conversations.set(index, conversation);
+                        user.setConversation(conversations);
+                        userRepository.save(user);
+                        break;
+                    }
+                    index++;
+                }
+            }
+            return conversationGroup;
+        }catch (Exception exception){
+            exception.printStackTrace();
+        }
+        return null;
+    }
+
+    public ConversationGroup removeMemberInGroup(String userId, String idGroup){
+        try {
+            int index = 0;
+            ConversationGroup group = null;
+            User user = userRepository.findById(userId).get();
+            for (Conversation conversation:user.getConversation()) {
+                if (conversation instanceof ConversationGroup && ((ConversationGroup) conversation).getIdGroup().trim().equals(idGroup.trim())){
+                    User user1 = userRepository.findById(userId).get();
+                    Member memberRemove = Member.builder().member(User.builder().id(userId.trim()).build()).memberType(MemberType.LEFT_MEMBER).build();
+                    index = ((ConversationGroup) conversation).getMembers().indexOf(memberRemove);
+                    ((ConversationGroup) conversation).getMembers().set(index, memberRemove);
+                    group = (ConversationGroup) conversation;
+                }
+            }
+            if (group != null){
+                for (Member member:group.getMembers()) {
+                    int i = 0;
+                    User user1 = userRepository.findById(member.getMember().getId()).get();
+                    for (Conversation conversation:user1.getConversation()) {
+                        if (conversation instanceof ConversationGroup && ((ConversationGroup) conversation).getIdGroup().trim().equals(group.getIdGroup().trim())){
+                            user1.getConversation().set(i,group);
+                            userRepository.save(user1);
+                            break;
+                        }
+                        i++;
+                    }
+                }
+                return group;
+            }
+            return null;
+        }catch (Exception exception){
+            exception.printStackTrace();
+        }
+        return null;
+    }
 }

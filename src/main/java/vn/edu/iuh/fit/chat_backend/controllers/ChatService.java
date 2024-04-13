@@ -256,6 +256,16 @@ public class ChatService {
         return null;
     }
 
+    @MessageMapping("/grantRoleMember")
+    public void grantRoleMember(@Payload ConversationGroup conversationGroup) {
+        ConversationGroup groupRS = userService.grantRoleMember(conversationGroup);
+        if (groupRS != null) {
+            for (Member member : conversationGroup.getMembers()) {
+                simpMessagingTemplate.convertAndSendToUser(member.getMember().getId(), "/grantRoleMember", groupRS);
+            }
+        }
+    }
+
     @MessageMapping("/accept-friend-request")
     public FriendRequest acceptFriendRequest(@Payload FriendRequest friendRequest) {
         System.out.println(friendRequest);
@@ -285,16 +295,15 @@ public class ChatService {
     }
 
     @MessageMapping("/disbandConversation")
-    public void disbandConversation(@Payload ConversationGroup conversationGroup){
+    public void disbandConversation(@Payload ConversationGroup conversationGroup) {
         System.out.println(conversationGroup);
-        ConversationGroup group=userService.disbandConversation(conversationGroup);
+        ConversationGroup group = userService.disbandConversation(conversationGroup);
         if (group != null) {
-            for (Member member:conversationGroup.getMembers()) {
+            for (Member member : conversationGroup.getMembers()) {
                 simpMessagingTemplate.convertAndSendToUser(member.getMember().getId(), "/disbandConversation", group);
             }
         }
     }
-
 
 
     @MessageMapping("/createGroup")
@@ -307,11 +316,11 @@ public class ChatService {
                     .orElse(null);
             if (userCreate != null) {
                 ConversationGroup groupRS = userService.createGroup(conversationGroup, userCreate);
-                for (Member member:conversationGroup.getMembers()) {
+                for (Member member : conversationGroup.getMembers()) {
                     simpMessagingTemplate.convertAndSendToUser(member.getMember().getId(), "/createGroup", groupRS);
                 }
                 return groupRS;
-            }else {
+            } else {
                 simpMessagingTemplate.convertAndSendToUser(userCreate.getMember().getId(), "/createGroup", new Conversation());
             }
         }
@@ -346,4 +355,20 @@ public class ChatService {
         return videoData;
     }
 
+    @MessageMapping("/removeMemberInGroup")
+    public void removeMemberInGroup(@Payload String node) throws JsonProcessingException {
+        ObjectMapper mapper = new ObjectMapper();
+        JsonNode rootNode = mapper.readTree(node);
+        String userId = rootNode.get("userId").asText();
+        String idGroup = rootNode.get("idGroup").asText();
+        System.out.println(node);
+        System.out.println(userId);
+        System.out.println(idGroup);
+        ConversationGroup group = userService.removeMemberInGroup(userId, idGroup);
+        if (group != null) {
+            for (Member member : group.getMembers()) {
+                simpMessagingTemplate.convertAndSendToUser(member.getMember().getId(), "/removeMemberInGroup", group);
+            }
+        }
+    }
 }
