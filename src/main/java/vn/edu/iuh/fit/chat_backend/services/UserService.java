@@ -252,6 +252,63 @@ public class UserService {
         return null;
     }
 
+    /**
+     *
+     * @param conversationGroup chứa idGroup và danh sách các member cần phân quyền phó nhóm
+     * @param ownerId người phân quyền
+     * @return conversationGroup đã cập nhật
+     */
+    public ConversationGroup grantRoleMemberV2(ConversationGroup conversationGroup, String ownerId){
+        try{
+            List<Member> membersDEPUTYLEADER = conversationGroup.getMembers();
+            System.out.println(ownerId);
+            User owner = userRepository.findById(ownerId).get();
+            ConversationGroup group = null;
+            for (Conversation conversation:owner.getConversation()) {
+                if (conversation instanceof ConversationGroup && ((ConversationGroup) conversation).getIdGroup().trim().equals(conversationGroup.getIdGroup().trim())){
+                    for (Member member:((ConversationGroup) conversation).getMembers()) {
+                        if (membersDEPUTYLEADER.contains(member)){
+                            member.setMemberType(MemberType.DEPUTY_LEADER);
+                        }else if(!member.getMember().getId().trim().equals(ownerId.trim()) && !member.getMemberType().equals(MemberType.LEFT_MEMBER)){
+                            member.setMemberType(MemberType.MEMBER);
+                        }
+                    }
+                    group = (ConversationGroup) conversation;
+                    break;
+                }
+            }
+            if (group !=null){
+                for (Member member:group.getMembers()) {
+                    User user = userRepository.findById(member.getMember().getId()).get();
+                    for (Conversation conversation:user.getConversation()) {
+                        if (conversation instanceof ConversationGroup && ((ConversationGroup) conversation).getIdGroup().trim().equals(group.getIdGroup().trim())){
+                            ((ConversationGroup) conversation).setMembers(group.getMembers());
+                            userRepository.save(user);
+                            break;
+                        }
+                    }
+                }
+                return group;
+            }
+            return null;
+        }catch (Exception exception){
+            exception.printStackTrace();
+        }
+        return null;
+    }
+
+    /**
+     *
+     * @param group chứa idGroup và danh sách các member mới được thêm
+     * @param ownerId người thêm
+     * @return conversationGroup đã cập nhật
+     */
+    public ConversationGroup addMemberNew(ConversationGroup group, String ownerId){
+
+
+        return null;
+    }
+
     public ConversationGroup removeMemberInGroup(String userId, String idGroup){
         try {
             int index = 0;
@@ -282,6 +339,36 @@ public class UserService {
                 return group;
             }
             return null;
+        }catch (Exception exception){
+            exception.printStackTrace();
+        }
+        return null;
+    }
+
+    public ConversationGroup changeStatusGroup(ConversationGroup group, String ownerId){
+        try {
+            User owner = userRepository.findById(ownerId).get();
+            ConversationGroup conversationGroup = null;
+            for (Conversation conversation:owner.getConversation()) {
+                if (conversation instanceof ConversationGroup && ((ConversationGroup) conversation).getIdGroup().trim().equals(group.getIdGroup().trim())){
+                    conversationGroup = (ConversationGroup) conversation;
+                    break;
+                }
+            }
+            if (conversationGroup != null){
+                conversationGroup.setStatus(group.getStatus());
+                for (Member member:conversationGroup.getMembers()) {
+                    User user = userRepository.findById(member.getMember().getId()).get();
+                    for (Conversation conversation:user.getConversation()) {
+                        if (conversation instanceof ConversationGroup && ((ConversationGroup) conversation).getIdGroup().trim().equals(group.getIdGroup().trim())){
+                            ((ConversationGroup) conversation).setStatus(conversationGroup.getStatus());
+//                            userRepository.save(user);
+                            break;
+                        }
+                    }
+                }
+                return conversationGroup;
+            }
         }catch (Exception exception){
             exception.printStackTrace();
         }

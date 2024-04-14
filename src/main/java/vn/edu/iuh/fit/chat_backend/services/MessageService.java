@@ -42,6 +42,7 @@ public class MessageService {
             System.out.println("contain");
             int index = conversationList.indexOf(ConversationSingle.builder().user(User.builder().id(receiver.getId()).build()).build());
             Conversation conversation = conversationList.get(index);
+            conversation.setConversationType(ConversationType.single);
             conversationList.get(index).setUpdateLast(LocalDateTime.now());
             List<Message> messageList = conversation.getMessages();
             messageList.add(message);
@@ -90,6 +91,7 @@ public class MessageService {
             }
             conversationGroup.setMessages(List.of(message));
             conversationGroup.setLastMessage();
+            conversationGroup.setConversationType(ConversationType.group);
             user.get().getConversation().add(conversationGroup);
             userRepository.save(user.get());
             return true;

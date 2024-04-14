@@ -193,13 +193,33 @@ public class ChatService {
         return null;
     }
 
+    /**
+     *
+     * @param conversationGroup {idGroup , status}
+     * @param ownerId chủ group người thực hiện cập nhật
+     * @throws JsonProcessingException
+     */
+    @MessageMapping("/changeStatusGroup")
+    public void changeStatusGroup(@Payload ConversationGroup conversationGroup ,@Payload String ownerId) throws JsonProcessingException {
+        ObjectMapper mapper = new ObjectMapper();
+        JsonNode rootNode = mapper.readTree(ownerId);
+        String owner = rootNode.get("ownerId").asText();
+        System.out.println(conversationGroup.getStatus());
+        System.out.println(owner);
+        ConversationGroup groupRS = userService.changeStatusGroup(conversationGroup,ownerId);
+        if (groupRS != null){
+            for (Member member:groupRS.getMembers()) {
+                simpMessagingTemplate.convertAndSendToUser(member.getMember().getId() , "/changeStatusGroup", groupRS);
+            }
+        }
+    }
+
     @MessageMapping("/private-single-message")
     public Message recMessageTextSingle(@Payload MessageText messageText, @Payload MessageFile messageFile, @Payload String idGroup) throws JsonProcessingException {
         ObjectMapper mapper = new ObjectMapper();
         JsonNode rootNode = mapper.readTree(idGroup);
         String idG = rootNode.get("idGroup").asText();
         if (!idG.trim().equals("")) {
-            System.out.println(idG);
             if (messageText.getContent() == null) {
                 List<Member> memberList = messageService.insertMessageGroup(messageFile, idG);
                 if (memberList.size() != 0) {
@@ -261,6 +281,20 @@ public class ChatService {
         ConversationGroup groupRS = userService.grantRoleMember(conversationGroup);
         if (groupRS != null) {
             for (Member member : conversationGroup.getMembers()) {
+                simpMessagingTemplate.convertAndSendToUser(member.getMember().getId(), "/grantRoleMember", groupRS);
+            }
+        }
+    }
+
+    @MessageMapping("/grantRoleMember_DEPUTY_LEADER")
+    public void grantRoleMemberV2(@Payload ConversationGroup conversationGroup, @Payload String ownerID) throws JsonProcessingException {
+        ObjectMapper mapper = new ObjectMapper();
+        JsonNode rootNode = mapper.readTree(ownerID);
+        String ownerIDGroup = rootNode.get("ownerID").asText();
+        ConversationGroup groupRS = userService.grantRoleMemberV2(conversationGroup,ownerIDGroup);
+        if (groupRS != null) {
+            for (Member member : groupRS.getMembers()) {
+                System.out.println(member.getMemberType());
                 simpMessagingTemplate.convertAndSendToUser(member.getMember().getId(), "/grantRoleMember", groupRS);
             }
         }
@@ -361,9 +395,6 @@ public class ChatService {
         JsonNode rootNode = mapper.readTree(node);
         String userId = rootNode.get("userId").asText();
         String idGroup = rootNode.get("idGroup").asText();
-        System.out.println(node);
-        System.out.println(userId);
-        System.out.println(idGroup);
         ConversationGroup group = userService.removeMemberInGroup(userId, idGroup);
         if (group != null) {
             for (Member member : group.getMembers()) {
