@@ -68,6 +68,7 @@ public class MessageService {
                 for (Member member:((ConversationGroup) conversation).getMembers()) {
                     if (!member.getMemberType().equals(MemberType.LEFT_MEMBER)){
                         addMessageGroupForMemberReceiver(message,idGroup,member.getMember().getId(), conversation );
+                        System.out.println(member.getMember().getUserName());
                         membersActive.add(member);
                     }
                 }

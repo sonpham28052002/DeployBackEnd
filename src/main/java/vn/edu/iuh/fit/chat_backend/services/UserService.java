@@ -88,12 +88,12 @@ public class UserService {
         return friendRS;
     }
 
-    public ConversationGroup disbandConversation(ConversationGroup conversationGroup){
+    public ConversationGroup disbandConversation(ConversationGroup conversationGroup) {
         try {
-            for (Member member:conversationGroup.getMembers()) {
-                User user =userRepository.findById(member.getMember().getId()).get();
-                for (Conversation conversation:user.getConversation()) {
-                    if (conversation instanceof ConversationGroup && ((ConversationGroup) conversation).getIdGroup().trim().equals(conversationGroup.getIdGroup().trim())){
+            for (Member member : conversationGroup.getMembers()) {
+                User user = userRepository.findById(member.getMember().getId()).get();
+                for (Conversation conversation : user.getConversation()) {
+                    if (conversation instanceof ConversationGroup && ((ConversationGroup) conversation).getIdGroup().trim().equals(conversationGroup.getIdGroup().trim())) {
                         ((ConversationGroup) conversation).setStatus(GroupStatus.DISBANDED);
                         break;
                     }
@@ -102,7 +102,7 @@ public class UserService {
             }
             conversationGroup.setStatus(GroupStatus.DISBANDED);
             return conversationGroup;
-        }catch (Exception  exception){
+        } catch (Exception exception) {
             exception.printStackTrace();
         }
         return null;
@@ -186,18 +186,18 @@ public class UserService {
         return null;
     }
 
-    public ConversationGroup createGroup(ConversationGroup conversationGroup,Member member ) {
+    public ConversationGroup createGroup(ConversationGroup conversationGroup, Member member) {
         User userCreate = userRepository.findById(member.getMember().getId()).get();
         ConversationGroup newConversation = new ConversationGroup();
         try {
             if (conversationGroup.getStatus() == null) {
                 newConversation.setStatus(GroupStatus.ACTIVE);
-            }else{
+            } else {
                 newConversation.setStatus(conversationGroup.getStatus());
             }
-            if (conversationGroup.getAvtGroup() == null){
+            if (conversationGroup.getAvtGroup() == null) {
                 newConversation.setAvtGroup("https://inkythuatso.com/uploads/images/2023/03/anh-dai-dien-trang-inkythuatso-03-15-23-52.jpg");
-            }else{
+            } else {
                 newConversation.setAvtGroup(conversationGroup.getAvtGroup());
             }
             newConversation.setIdGroup(UUID.randomUUID().toString());
@@ -205,8 +205,8 @@ public class UserService {
             newConversation.setConversationType(ConversationType.group);
             newConversation.setMessages(new ArrayList<>());
             List<Member> members = new ArrayList<>();
-            for (Member member1:conversationGroup.getMembers()) {
-                members.add( Member.builder()
+            for (Member member1 : conversationGroup.getMembers()) {
+                members.add(Member.builder()
                         .member(User.builder().id(member1.getMember().getId()).build())
                         .memberType(member1.getMemberType()).build());
             }
@@ -215,7 +215,7 @@ public class UserService {
             newConversation.setUpdateLast(LocalDateTime.now());
 
             userCreate.getConversation().add(newConversation);
-            for (Member member1:newConversation.getMembers()) {
+            for (Member member1 : newConversation.getMembers()) {
                 User user = userRepository.findById(member1.getMember().getId()).get();
                 user.getConversation().add(newConversation);
                 userRepository.save(user);
@@ -228,14 +228,14 @@ public class UserService {
     }
 
 
-    public ConversationGroup grantRoleMember(ConversationGroup conversationGroup){
-        try{
-            for (Member member:conversationGroup.getMembers()) {
+    public ConversationGroup grantRoleMember(ConversationGroup conversationGroup) {
+        try {
+            for (Member member : conversationGroup.getMembers()) {
                 User user = userRepository.findById(member.getMember().getId()).get();
                 List<Conversation> conversations = user.getConversation();
                 int index = 0;
-                for (Conversation conversation:conversations) {
-                    if (conversation instanceof ConversationGroup && ((ConversationGroup) conversation).getIdGroup().trim().equals(conversationGroup.getIdGroup())){
+                for (Conversation conversation : conversations) {
+                    if (conversation instanceof ConversationGroup && ((ConversationGroup) conversation).getIdGroup().trim().equals(conversationGroup.getIdGroup())) {
                         ((ConversationGroup) conversation).setMembers(conversationGroup.getMembers());
                         conversations.set(index, conversation);
                         user.setConversation(conversations);
@@ -246,30 +246,29 @@ public class UserService {
                 }
             }
             return conversationGroup;
-        }catch (Exception exception){
+        } catch (Exception exception) {
             exception.printStackTrace();
         }
         return null;
     }
 
     /**
-     *
      * @param conversationGroup chứa idGroup và danh sách các member cần phân quyền phó nhóm
-     * @param ownerId người phân quyền
+     * @param ownerId           người phân quyền
      * @return conversationGroup đã cập nhật
      */
-    public ConversationGroup grantRoleMemberV2(ConversationGroup conversationGroup, String ownerId){
-        try{
+    public ConversationGroup grantRoleMemberV2(ConversationGroup conversationGroup, String ownerId) {
+        try {
             List<Member> membersDEPUTYLEADER = conversationGroup.getMembers();
             System.out.println(ownerId);
             User owner = userRepository.findById(ownerId).get();
             ConversationGroup group = null;
-            for (Conversation conversation:owner.getConversation()) {
-                if (conversation instanceof ConversationGroup && ((ConversationGroup) conversation).getIdGroup().trim().equals(conversationGroup.getIdGroup().trim())){
-                    for (Member member:((ConversationGroup) conversation).getMembers()) {
-                        if (membersDEPUTYLEADER.contains(member)){
+            for (Conversation conversation : owner.getConversation()) {
+                if (conversation instanceof ConversationGroup && ((ConversationGroup) conversation).getIdGroup().trim().equals(conversationGroup.getIdGroup().trim())) {
+                    for (Member member : ((ConversationGroup) conversation).getMembers()) {
+                        if (membersDEPUTYLEADER.contains(member)) {
                             member.setMemberType(MemberType.DEPUTY_LEADER);
-                        }else if(!member.getMember().getId().trim().equals(ownerId.trim()) && !member.getMemberType().equals(MemberType.LEFT_MEMBER)){
+                        } else if (!member.getMember().getId().trim().equals(ownerId.trim()) && !member.getMemberType().equals(MemberType.LEFT_MEMBER)) {
                             member.setMemberType(MemberType.MEMBER);
                         }
                     }
@@ -277,11 +276,11 @@ public class UserService {
                     break;
                 }
             }
-            if (group !=null){
-                for (Member member:group.getMembers()) {
+            if (group != null) {
+                for (Member member : group.getMembers()) {
                     User user = userRepository.findById(member.getMember().getId()).get();
-                    for (Conversation conversation:user.getConversation()) {
-                        if (conversation instanceof ConversationGroup && ((ConversationGroup) conversation).getIdGroup().trim().equals(group.getIdGroup().trim())){
+                    for (Conversation conversation : user.getConversation()) {
+                        if (conversation instanceof ConversationGroup && ((ConversationGroup) conversation).getIdGroup().trim().equals(group.getIdGroup().trim())) {
                             ((ConversationGroup) conversation).setMembers(group.getMembers());
                             userRepository.save(user);
                             break;
@@ -291,85 +290,155 @@ public class UserService {
                 return group;
             }
             return null;
-        }catch (Exception exception){
+        } catch (Exception exception) {
             exception.printStackTrace();
         }
         return null;
     }
 
     /**
-     *
-     * @param group chứa idGroup và danh sách các member mới được thêm
+     * @param group   chứa idGroup và danh sách các member mới được thêm
      * @param ownerId người thêm
      * @return conversationGroup đã cập nhật
      */
-    public ConversationGroup addMemberNew(ConversationGroup group, String ownerId){
+    public ConversationGroup addMemberNew(ConversationGroup group, String ownerId) {
 
 
         return null;
     }
 
-    public ConversationGroup removeMemberInGroup(String userId, String idGroup){
+    public ConversationGroup removeMemberInGroup(String userId, String idGroup,String ownerId) {
         try {
             int index = 0;
             ConversationGroup group = null;
-            User user = userRepository.findById(userId).get();
-            for (Conversation conversation:user.getConversation()) {
-                if (conversation instanceof ConversationGroup && ((ConversationGroup) conversation).getIdGroup().trim().equals(idGroup.trim())){
-                    User user1 = userRepository.findById(userId).get();
+            User user = userRepository.findById(ownerId).get();
+            for (Conversation conversation : user.getConversation()) {
+                if (conversation instanceof ConversationGroup && ((ConversationGroup) conversation).getIdGroup().trim().equals(idGroup.trim())) {
                     Member memberRemove = Member.builder().member(User.builder().id(userId.trim()).build()).memberType(MemberType.LEFT_MEMBER).build();
                     index = ((ConversationGroup) conversation).getMembers().indexOf(memberRemove);
                     ((ConversationGroup) conversation).getMembers().set(index, memberRemove);
                     group = (ConversationGroup) conversation;
+                    break;
                 }
             }
-            if (group != null){
-                for (Member member:group.getMembers()) {
+            if (group != null) {
+                for (Member member : group.getMembers()) {
                     int i = 0;
-                    User user1 = userRepository.findById(member.getMember().getId()).get();
-                    for (Conversation conversation:user1.getConversation()) {
-                        if (conversation instanceof ConversationGroup && ((ConversationGroup) conversation).getIdGroup().trim().equals(group.getIdGroup().trim())){
-                            user1.getConversation().set(i,group);
-                            userRepository.save(user1);
-                            break;
+                    if (!member.getMemberType().equals(MemberType.LEFT_MEMBER)){
+                        User user1 = userRepository.findById(member.getMember().getId()).get();
+                        for (Conversation conversation : user1.getConversation()) {
+                            if (conversation instanceof ConversationGroup && ((ConversationGroup) conversation).getIdGroup().trim().equals(group.getIdGroup().trim())) {
+                                user1.getConversation().set(i, group);
+                                userRepository.save(user1);
+                                break;
+                            }
+                            i++;
                         }
-                        i++;
                     }
                 }
                 return group;
             }
             return null;
-        }catch (Exception exception){
+        } catch (Exception exception) {
             exception.printStackTrace();
         }
         return null;
     }
 
-    public ConversationGroup changeStatusGroup(ConversationGroup group, String ownerId){
+    public ConversationGroup changeStatusGroup(ConversationGroup group, String ownerId) {
         try {
             User owner = userRepository.findById(ownerId).get();
             ConversationGroup conversationGroup = null;
-            for (Conversation conversation:owner.getConversation()) {
-                if (conversation instanceof ConversationGroup && ((ConversationGroup) conversation).getIdGroup().trim().equals(group.getIdGroup().trim())){
+            for (Conversation conversation : owner.getConversation()) {
+                if (conversation instanceof ConversationGroup && ((ConversationGroup) conversation).getIdGroup().trim().equals(group.getIdGroup().trim())) {
                     conversationGroup = (ConversationGroup) conversation;
                     break;
                 }
             }
-            if (conversationGroup != null){
+            if (conversationGroup != null) {
                 conversationGroup.setStatus(group.getStatus());
-                for (Member member:conversationGroup.getMembers()) {
+                for (Member member : conversationGroup.getMembers()) {
                     User user = userRepository.findById(member.getMember().getId()).get();
-                    for (Conversation conversation:user.getConversation()) {
-                        if (conversation instanceof ConversationGroup && ((ConversationGroup) conversation).getIdGroup().trim().equals(group.getIdGroup().trim())){
+                    for (Conversation conversation : user.getConversation()) {
+                        if (conversation instanceof ConversationGroup && ((ConversationGroup) conversation).getIdGroup().trim().equals(group.getIdGroup().trim())) {
                             ((ConversationGroup) conversation).setStatus(conversationGroup.getStatus());
-//                            userRepository.save(user);
+                            userRepository.save(user);
                             break;
                         }
                     }
                 }
                 return conversationGroup;
             }
-        }catch (Exception exception){
+        } catch (Exception exception) {
+            exception.printStackTrace();
+        }
+        return null;
+    }
+
+    public ConversationGroup addMemberIntoGroup(ConversationGroup group, String ownerId) {
+        try {
+            User user = userRepository.findById(ownerId).get();
+            ConversationGroup group1 = null;
+            List<Member> memberListOld = new ArrayList<>();
+            for (Conversation conversation : user.getConversation()) {
+                if (conversation instanceof ConversationGroup && ((ConversationGroup) conversation).getIdGroup().trim().equals(group.getIdGroup().trim())) {
+                    memberListOld.addAll(((ConversationGroup) conversation).getMembers());
+                    for (Member member : group.getMembers()) {
+                        int index = ((ConversationGroup) conversation).getMembers().indexOf(member);
+                        if (index ==-1){
+                            member.setMemberType(MemberType.MEMBER);
+                            ((ConversationGroup) conversation).getMembers().add(member);
+                        }else{
+                            member.setMemberType(MemberType.MEMBER);
+                            ((ConversationGroup) conversation).getMembers().set(index,member);
+                        }
+                    }
+                    group1 = (ConversationGroup) conversation;
+                    break;
+                }
+            }
+            System.out.println(group1);
+            if (group1 != null) {
+                List<Message> messageList = group1.getMessages();
+                for (Member member : group1.getMembers()) {
+                    User user1 = userRepository.findById(member.getMember().getId()).get();
+                    if (messageList.contains(member)) {
+                        ConversationGroup groupCheck = null;
+                        for (Conversation conversation : user1.getConversation()) {
+                            if (conversation instanceof ConversationGroup && ((ConversationGroup) conversation).getIdGroup().equals(group1.getIdGroup())) {
+                                groupCheck = (ConversationGroup) conversation;
+                                ((ConversationGroup) conversation).setMembers(group1.getMembers());
+                                conversation.setMessages(group1.getMessages());
+                                userRepository.save(user1);
+                                break;
+                            }
+                        }
+                        System.out.println(groupCheck);
+                        if (groupCheck == null) {
+                            System.out.println("aaa");
+                            user1.getConversation().add(group1);
+                            userRepository.save(user1);
+                        }
+                    } else if (!member.getMemberType().equals(MemberType.LEFT_MEMBER)) {
+                        ConversationGroup group2 = null;
+                        for (Conversation conversation : user1.getConversation()) {
+                            if (conversation instanceof ConversationGroup && ((ConversationGroup) conversation).getIdGroup().equals(group1.getIdGroup())) {
+                                ((ConversationGroup) conversation).setMembers(group1.getMembers());
+                                userRepository.save(user1);
+                                group2 = (ConversationGroup) conversation;
+                                break;
+                            }
+                        }
+                        if(group2 == null){
+                            user1.getConversation().add(group1);
+                            userRepository.save(user1);
+                        }
+                    }
+                }
+                return group1;
+            }
+            return null;
+        } catch (Exception exception) {
             exception.printStackTrace();
         }
         return null;
