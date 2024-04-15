@@ -85,6 +85,7 @@ public class UserService {
             user.get().setFriendList(friendList);
             userRepository.save(user.get());
         }
+
         return friendRS;
     }
 

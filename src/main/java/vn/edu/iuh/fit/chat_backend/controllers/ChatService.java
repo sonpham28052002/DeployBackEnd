@@ -319,9 +319,10 @@ public class ChatService {
         String ownerId = jsonNode.get("ownerId").asText();
         String userId = jsonNode.get("userId").asText();
         Friend friend = userService.Unfriend(ownerId, userId);
+        Friend friend1 = userService.Unfriend(userId, ownerId);
         System.out.println(friend);
         if (friend != null) {
-            simpMessagingTemplate.convertAndSendToUser(ownerId, "/unfriend", friend);
+            simpMessagingTemplate.convertAndSendToUser(ownerId, "/unfriend", friend1);
             simpMessagingTemplate.convertAndSendToUser(userId, "/unfriend", friend);
             return friend;
         }
