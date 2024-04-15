@@ -363,7 +363,6 @@ public class UserService {
             if (group != null) {
                 for (Member member : group.getMembers()) {
                     int i = 0;
-                    if (!member.getMemberType().equals(MemberType.LEFT_MEMBER)) {
                         User user1 = userRepository.findById(member.getMember().getId()).get();
                         for (Conversation conversation : user1.getConversation()) {
                             if (conversation instanceof ConversationGroup && ((ConversationGroup) conversation).getIdGroup().trim().equals(group.getIdGroup().trim())) {
@@ -373,7 +372,6 @@ public class UserService {
                             }
                             i++;
                         }
-                    }
                 }
                 return group;
             }
