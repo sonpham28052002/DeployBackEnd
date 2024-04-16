@@ -24,6 +24,7 @@ public class MessageService {
 
         User sender = userRepository.findById(message.getSender().getId()).get();
         User receiver = message.getReceiver();
+        message.setSenderDate(LocalDateTime.now());
         List<Conversation> conversationList = sender.getConversation();
         boolean containConversation = conversationList.contains(ConversationSingle.builder().user(User.builder().id(receiver.getId()).build()).build());
         if (!containConversation) {
