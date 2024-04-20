@@ -123,9 +123,9 @@ public class ChatService {
         if (messageTexts.get(0).getContent() == null) {
             for (MessageFile messageFile : messageFiles) {
                 int index = messageFile.getReceiver().getId().indexOf("_");
+                messageFile.setId(UUID.randomUUID().toString());
                 if (index == -1) {
                     messageFile.setSenderDate(LocalDateTime.now());
-                    messageFile.setId(UUID.randomUUID().toString());
                     messageService.insertMessageSingleSender(messageFile);
                     messageService.insertMessageSingleReceiver(messageFile);
                     simpMessagingTemplate.convertAndSendToUser(messageFile.getReceiver().getId() + "", "/singleChat", messageFile);
@@ -147,11 +147,11 @@ public class ChatService {
         } else {
 
             for (MessageText messageText : messageTexts) {
+                messageText.setId(UUID.randomUUID().toString());
                 System.out.println("user: " + messageText.getReceiver().getId());
                 int index = messageText.getReceiver().getId().indexOf("_");
                 if (index == -1) {
                     messageText.setSenderDate(LocalDateTime.now());
-                    messageText.setId(UUID.randomUUID().toString());
                     messageService.insertMessageSingleSender(messageText);
                     messageService.insertMessageSingleReceiver(messageText);
                     simpMessagingTemplate.convertAndSendToUser(messageText.getReceiver().getId() + "", "/singleChat", messageText);

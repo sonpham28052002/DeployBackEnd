@@ -9,10 +9,8 @@ import vn.edu.iuh.fit.chat_backend.types.MemberType;
 import vn.edu.iuh.fit.chat_backend.types.MessageType;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
+import java.util.stream.Stream;
 
 @Service
 public class MessageService {
@@ -20,7 +18,9 @@ public class MessageService {
     @Autowired
     private UserRepository userRepository;
 
+
     public boolean insertMessageSingleSender(Message message) {
+
 
         User sender = userRepository.findById(message.getSender().getId()).get();
         User receiver = message.getReceiver();
@@ -184,10 +184,13 @@ public class MessageService {
         return false;
     }
 
+
     public boolean deleteMessageSingle(Message message, String ownerID, String idGroup){
-        Optional<User> user = userRepository.findById(ownerID);
-        List<Conversation> conversations = user.get().getConversation();
-        try {
+        try (Stream<User> userDB = userRepository.findById(ownerID).stream()){
+            Optional<User> user = null;
+            user = userDB.findFirst();
+            List<Conversation> conversations = null;
+            conversations = user.get().getConversation();
             if (!idGroup.trim().equals("")){
                 for (Conversation conversation:conversations) {
                     if (conversation instanceof ConversationGroup && ((ConversationGroup) conversation).getIdGroup().trim().equals(idGroup.trim())){
@@ -196,34 +199,46 @@ public class MessageService {
                             messageList.remove(index);
                             if(index == 0){
                                 conversation.setLastMessage(null);
-
                             }else{
                                 conversation.setLastMessage();
-
                             }
                             userRepository.save(user.get());
                             return true;
                     }
                 }
             }else {
-                User userMember = null;
-                if (user.get().getId().equals(message.getSender().getId())){
-                    userMember = userRepository.findById(message.getReceiver().getId()).get();
-                }else {
-                    System.out.println(message.getSender().getId());
-                    userMember = userRepository.findById(message.getSender().getId()).get();
+                User userCon = null;
+                List<Message> messageList = null;
+                int indexCon = 0;
+                if (user.get().getId().equals(message.getSender().getId()))
+                {
+                    userCon = userRepository.findById(message.getReceiver().getId()).get();
+                }else{
+                    userCon = userRepository.findById(message.getSender().getId()).get();
                 }
-                for (Conversation conversation:conversations) {
-                    if (conversation instanceof ConversationSingle){
-                        if (((ConversationSingle) conversation).getUser().equals(userMember)){
-                            List<Message> messageList = conversation.getMessages();
-                            System.out.println(messageList.indexOf(message));
-                            messageList.remove(messageList.indexOf(message));
-                            conversation.setLastMessage();
+                for (Conversation conversation:user.get().getConversation()) {
+                    if (conversation instanceof ConversationSingle && ((ConversationSingle) conversation).getUser().getId().equals(userCon.getId())){
+
+                        if (user.get().getConversation().get(indexCon).getMessages().size()<=3){
+                            int indexMess =  user.get().getConversation().get(indexCon).getMessages().indexOf(message);
+                            List<Message> list = new ArrayList<>();
+                            for (int i = 0; i < user.get().getConversation().get(indexCon).getMessages().size(); i++) {
+                                if (i != indexMess){
+                                    list.add(user.get().getConversation().get(indexCon).getMessages().get(i));
+                                }
+                            }
+                            conversation.setMessages(list);
+                            user.get().getConversation().set(indexCon,conversation);
                             userRepository.save(user.get());
-                            return true;
+                        }else{
+                            conversation.getMessages().remove(message);
+                            System.out.println(conversation.getMessages().size());
+                            System.out.println(user.get().getConversation().get(indexCon).getMessages().size());
+                            userRepository.save(user.get());
                         }
+                        return true;
                     }
+                    indexCon++;
                 }
             }
         } catch (Exception exception) {
