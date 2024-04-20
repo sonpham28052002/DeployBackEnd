@@ -94,6 +94,7 @@ public class ChatService {
         String Group = rootNode.get("idGroup").asText();
         String ownerId = rootNode.get("ownerId").asText();
         if (Group.trim().equals("")) {
+            // single chat
             if (messageText.getContent() == null) {
                 System.out.println(messageFile);
                 messageService.deleteMessageSingle(messageFile, ownerId, Group);
@@ -104,13 +105,14 @@ public class ChatService {
                 simpMessagingTemplate.convertAndSendToUser(ownerId, "/deleteMessage", messageText);
             }
         } else {
+            // group chat
             if (messageText.getContent() == null) {
                 System.out.println(messageFile);
-                messageService.deleteMessageSingle(messageFile, ownerId, Group);
+                messageService.deleteMessageGroup(messageFile, ownerId, Group);
                 simpMessagingTemplate.convertAndSendToUser(ownerId, "/deleteMessage", messageFile);
             } else {
                 System.out.println(messageText.getReceiver());
-                messageService.deleteMessageSingle(messageText, ownerId, Group);
+                messageService.deleteMessageGroup(messageText, ownerId, Group);
                 simpMessagingTemplate.convertAndSendToUser(ownerId, "/deleteMessage", messageText);
             }
         }
