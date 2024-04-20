@@ -97,104 +97,18 @@ class ChatBackEndApplicationTests {
 
 
         sonnguyen.setConversation(List.of(conversationGroup));
+        sonpham.setConversation(List.of(conversationGroup));
+        cuong.setConversation(List.of(conversationGroup));
+        leon.setConversation(List.of(conversationGroup));
+
         userRepository.save(sonnguyen);
-
-        List<Message> messageList = new ArrayList<>();
-        for (int i = 0; i < 3; i++) {
-            MessageText messageText = new MessageText();
-            messageText.setMessageType(MessageType.Text);
-            messageText.setContent(faker.text().text());
-            messageText.setId(UUID.randomUUID().toString());
-            messageText.setSeen(List.of(User.builder().id(sonpham.getId()).build(), User.builder().id(cuong.getId()).build()));
-            if (i % 2 == 0) {
-                messageText.setReceiver(User.builder().id(sonpham.getId()).build());
-                messageText.setSender(User.builder().id(cuong.getId()).build());
-            } else {
-                messageText.setReceiver(User.builder().id(cuong.getId()).build());
-                messageText.setSender(User.builder().id(sonpham.getId()).build());
-            }
-            messageText.setSenderDate(LocalDateTime.now());
-            messageList.add(messageText);
-        }
-        // Tạo conversation single cường - sơn
-        ConversationSingle conversationSingleCuong = new ConversationSingle();
-        conversationSingleCuong.setMessages(messageList);
-        conversationSingleCuong.setConversationType(ConversationType.single);
-        conversationSingleCuong.setUser(User.builder().id(sonpham.getId()).build());
-        conversationSingleCuong.setUpdateLast(LocalDateTime.now());
-        conversationSingleCuong.setLastMessage();
-        conversationsCuong.add(conversationSingleCuong);
-        conversationsCuong.add(conversationGroup);
-        cuong.setConversation(conversationsCuong);
         userRepository.save(cuong);
-
-        // Tạo conversation single cường - sơn
-        ConversationSingle conversationSingleSon = new ConversationSingle();
-        conversationSingleSon.setMessages(messageList);
-        conversationSingleSon.setConversationType(ConversationType.single);
-        conversationSingleSon.setUser(User.builder().id(cuong.getId()).build());
-        conversationSingleSon.setUpdateLast(LocalDateTime.now());
-        conversationSingleSon.setLastMessage();
-        conversationsSon.add(conversationSingleSon);
-
-        for (int i = 0; i < 3; i++) {
-            MessageText messageText = new MessageText();
-            messageText.setMessageType(MessageType.Text);
-            messageText.setContent(faker.text().text());
-            messageText.setId(UUID.randomUUID().toString());
-            messageText.setSeen(List.of(User.builder().id(sonpham.getId()).build(), User.builder().id(cuong.getId()).build()));
-            if (i % 2 == 0) {
-                messageText.setReceiver(User.builder().id(sonpham.getId()).build());
-                messageText.setSender(User.builder().id(leon.getId()).build());
-            } else {
-                messageText.setReceiver(User.builder().id(leon.getId()).build());
-                messageText.setSender(User.builder().id(sonpham.getId()).build());
-            }
-            messageText.setSenderDate(LocalDateTime.now());
-            messageList.add(messageText);
-        }
-        ConversationSingle conversationSingleSonLeon = new ConversationSingle();
-        conversationSingleSonLeon.setMessages(messageList);
-        conversationSingleSonLeon.setConversationType(ConversationType.single);
-        conversationSingleSonLeon.setUser(User.builder().id(leon.getId()).build());
-        conversationSingleSonLeon.setUpdateLast(LocalDateTime.now());
-        conversationSingleSonLeon.setLastMessage();
-        conversationsLeon.add(conversationSingleSonLeon);
-        conversationsLeon.add(conversationGroup);
-        leon.setConversation(conversationsLeon);
-
-        conversationsSon.add(conversationSingleSonLeon);
-        conversationsSon.add(conversationGroup);
-        sonpham.setConversation(conversationsSon);
-        for (Conversation conversation : sonpham.getConversation()) {
-            System.out.println(conversation);
-        }
         userRepository.save(sonpham);
-
-    }
-
-    @Test
-    void aa() {
-        User leon = userRepository.findById("yGjQT5o0sleSmjHVDHT24SS8FAB2").get();
-        User sonpham = userRepository.findById("jgfqCBTFdEgDmpHHXaNHdZV8B982").get();
-        List<Message> messageList = new ArrayList<>();
-        for (Conversation conversation : sonpham.getConversation()) {
-            if (conversation instanceof ConversationSingle) {
-                if (((ConversationSingle) conversation).getUser().equals(User.builder().id(leon.getId()).build())) {
-                    messageList.addAll(conversation.getMessages());
-                }
-            }
-        }
-        ConversationSingle conversationSingleLeon = new ConversationSingle();
-        conversationSingleLeon.setMessages(messageList);
-        conversationSingleLeon.setLastMessage();
-        conversationSingleLeon.setConversationType(ConversationType.single);
-        conversationSingleLeon.setUser(User.builder().id(sonpham.getId()).build());
-        conversationSingleLeon.setUpdateLast(LocalDateTime.now());
-        leon.setConversation(List.of(conversationSingleLeon));
         userRepository.save(leon);
 
     }
+
+
 
     @Test
     void test() {
@@ -246,6 +160,128 @@ class ChatBackEndApplicationTests {
         userRepository.save(sonpham);
     }
 
+
+    @Test
+    void test2() {
+        Faker faker = new Faker();
+        User sonpham = userRepository.findById("jgfqCBTFdEgDmpHHXaNHdZV8B982").get();
+        User leon = userRepository.findById("yGjQT5o0sleSmjHVDHT24SS8FAB2").get();
+        List<Message> messageList = new ArrayList<>();
+        for (int i = 0; i < 10; i++) {
+            MessageText messageText = new MessageText();
+            messageText.setMessageType(MessageType.Text);
+            messageText.setContent(faker.text().text());
+            messageText.setId(UUID.randomUUID().toString());
+            messageText.setSeen(List.of(User.builder().id(sonpham.getId()).build(), User.builder().id(leon.getId()).build()));
+            if (i % 2 == 0) {
+                messageText.setReceiver(User.builder().id(sonpham.getId()).build());
+                messageText.setSender(User.builder().id(leon.getId()).build());
+            } else {
+                messageText.setReceiver(User.builder().id(leon.getId()).build());
+                messageText.setSender(User.builder().id(sonpham.getId()).build());
+            }
+            messageText.setSenderDate(LocalDateTime.now());
+            messageList.add(messageText);
+        }
+        // danh sách trò chuyện của sơn nguyễn
+        List<Conversation> conversationsnguyen = leon.getConversation();
+        //  trò chuyện của sơn nguyễn - sonpham
+        ConversationSingle conversationSingleSonLeon = new ConversationSingle();
+        conversationSingleSonLeon.setMessages(messageList);
+        conversationSingleSonLeon.setConversationType(ConversationType.single);
+        conversationSingleSonLeon.setUser(User.builder().id(sonpham.getId()).build());
+        conversationSingleSonLeon.setUpdateLast(LocalDateTime.now());
+        conversationSingleSonLeon.setLastMessage();
+        conversationsnguyen.add(conversationSingleSonLeon);
+        leon.setConversation(conversationsnguyen);
+
+
+        //  trò chuyện của sonpham - sơn nguyễn
+
+        List<Conversation> conversationspham = sonpham.getConversation();
+        ConversationSingle conversationSingleSon = new ConversationSingle();
+        conversationSingleSon.setMessages(messageList);
+        conversationSingleSon.setConversationType(ConversationType.single);
+        conversationSingleSon.setUser(User.builder().id(leon.getId()).build());
+        conversationSingleSon.setUpdateLast(LocalDateTime.now());
+        conversationSingleSon.setLastMessage();
+        conversationspham.add(conversationSingleSon);
+        sonpham.setConversation(conversationspham);
+        userRepository.save(leon);
+        userRepository.save(sonpham);
+    }
+
+    @Test
+    void test3() {
+        Faker faker = new Faker();
+        User sonpham = userRepository.findById("jgfqCBTFdEgDmpHHXaNHdZV8B982").get();
+        User cuong = userRepository.findById("N7B7os8xFOMceSxRSIzQlkwr3N43").get();
+        List<Message> messageList = new ArrayList<>();
+        for (int i = 0; i < 10; i++) {
+            MessageText messageText = new MessageText();
+            messageText.setMessageType(MessageType.Text);
+            messageText.setContent(faker.text().text());
+            messageText.setId(UUID.randomUUID().toString());
+            messageText.setSeen(List.of(User.builder().id(sonpham.getId()).build(), User.builder().id(cuong.getId()).build()));
+            if (i % 2 == 0) {
+                messageText.setReceiver(User.builder().id(sonpham.getId()).build());
+                messageText.setSender(User.builder().id(cuong.getId()).build());
+            } else {
+                messageText.setReceiver(User.builder().id(cuong.getId()).build());
+                messageText.setSender(User.builder().id(sonpham.getId()).build());
+            }
+            messageText.setSenderDate(LocalDateTime.now());
+            messageList.add(messageText);
+        }
+        // danh sách trò chuyện của sơn nguyễn
+        List<Conversation> conversationsnguyen = cuong.getConversation();
+        //  trò chuyện của sơn nguyễn - sonpham
+        ConversationSingle conversationSingleSonLeon = new ConversationSingle();
+        conversationSingleSonLeon.setMessages(messageList);
+        conversationSingleSonLeon.setConversationType(ConversationType.single);
+        conversationSingleSonLeon.setUser(User.builder().id(sonpham.getId()).build());
+        conversationSingleSonLeon.setUpdateLast(LocalDateTime.now());
+        conversationSingleSonLeon.setLastMessage();
+        conversationsnguyen.add(conversationSingleSonLeon);
+        cuong.setConversation(conversationsnguyen);
+
+
+        //  trò chuyện của sonpham - sơn nguyễn
+
+        List<Conversation> conversationspham = sonpham.getConversation();
+        ConversationSingle conversationSingleSon = new ConversationSingle();
+        conversationSingleSon.setMessages(messageList);
+        conversationSingleSon.setConversationType(ConversationType.single);
+        conversationSingleSon.setUser(User.builder().id(cuong.getId()).build());
+        conversationSingleSon.setUpdateLast(LocalDateTime.now());
+        conversationSingleSon.setLastMessage();
+        conversationspham.add(conversationSingleSon);
+        sonpham.setConversation(conversationspham);
+        userRepository.save(cuong);
+        userRepository.save(sonpham);
+    }
+    @Test
+    void test4() {
+        User leon = userRepository.findById("yGjQT5o0sleSmjHVDHT24SS8FAB2").get();
+        User sonpham = userRepository.findById("jgfqCBTFdEgDmpHHXaNHdZV8B982").get();
+        List<Message> messageList = new ArrayList<>();
+        for (Conversation conversation : sonpham.getConversation()) {
+            if (conversation instanceof ConversationSingle) {
+                if (((ConversationSingle) conversation).getUser().equals(User.builder().id(leon.getId()).build())) {
+                    messageList.addAll(conversation.getMessages());
+                }
+            }
+        }
+        ConversationSingle conversationSingleLeon = new ConversationSingle();
+        conversationSingleLeon.setMessages(messageList);
+        conversationSingleLeon.setLastMessage();
+        conversationSingleLeon.setConversationType(ConversationType.single);
+        conversationSingleLeon.setUser(User.builder().id(sonpham.getId()).build());
+        conversationSingleLeon.setUpdateLast(LocalDateTime.now());
+        leon.setConversation(List.of(conversationSingleLeon));
+        userRepository.save(leon);
+
+    }
     @Test
     void kkk() {
         List<String> stringList = List.of("yGjQT5o0sleSmjHVDHT24SS8FAB2", "N7B7os8xFOMceSxRSIzQlkwr3N43", "RGpCgF0lR1aGVcttckhAbBHWcSp2", "Ukk2dSG2xlfYBOiih7C2pE7Ct542");
