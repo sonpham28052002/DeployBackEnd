@@ -335,6 +335,42 @@ public class MessageService {
         }
         return null;
     }
+    public Message reactMessageGroup(Message message, String idGroup){
+        try {
+            Optional<User> userSender = userRepository.findById(message.getSender().getId());
+            if (userSender.isEmpty() ){
+                return null;
+            }
+            List<Member> members = null;
+            for (Conversation conversation:userSender.get().getConversation()) {
+                if (conversation instanceof ConversationGroup && ((ConversationGroup) conversation).getIdGroup().trim().equals(idGroup.trim())){
+                    members = ((ConversationGroup) conversation).getMembers();
+                    break;
+                }
+            }
+            if (members != null){
+                for (Member member:members) {
+                    if (!member.getMemberType().equals(MemberType.LEFT_MEMBER)){
+                        User user = userRepository.findById(member.getMember().getId()).get();
+                        for (Conversation conversation:user.getConversation()) {
+                            if (conversation instanceof ConversationGroup && ((ConversationGroup) conversation).getIdGroup().trim().equals(idGroup.trim())){
+                                int index = conversation.getMessages().indexOf(message);
+                                conversation.getMessages().get(index).setReact(message.getReact());
+                                userRepository.save(user);
+                                break;
+                            }
+                        }
+                    }
+                }
+                return message;
+            }
+
+            return null;
+        }catch (Exception exception){
+            exception.printStackTrace();
+        }
+        return null;
+    }
 
     public boolean updateReactMessage(User user, Message message, String userCon){
         for (Conversation conversation:user.getConversation()) {
