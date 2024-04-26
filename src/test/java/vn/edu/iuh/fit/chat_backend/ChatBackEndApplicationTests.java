@@ -56,6 +56,7 @@ class ChatBackEndApplicationTests {
             messageText.setMessageType(MessageType.Text);
             messageText.setContent(faker.text().text());
             messageText.setId(UUID.randomUUID().toString());
+            messageText.setReact(new ArrayList<>());
             messageText.setSeen(List.of(User.builder().id(sonpham.getId()).build(), User.builder().id(cuong.getId()).build(), User.builder().id(leon.getId()).build()));
             if (i % 2 == 0) {
                 messageText.setSender(User.builder().id(cuong.getId()).build());
@@ -121,6 +122,7 @@ class ChatBackEndApplicationTests {
             messageText.setMessageType(MessageType.Text);
             messageText.setContent(faker.text().text());
             messageText.setId(UUID.randomUUID().toString());
+            messageText.setReact(new ArrayList<>());
             messageText.setSeen(List.of(User.builder().id(sonpham.getId()).build(), User.builder().id(sonnguyen.getId()).build()));
             if (i % 2 == 0) {
                 messageText.setReceiver(User.builder().id(sonpham.getId()).build());
@@ -172,6 +174,7 @@ class ChatBackEndApplicationTests {
             messageText.setMessageType(MessageType.Text);
             messageText.setContent(faker.text().text());
             messageText.setId(UUID.randomUUID().toString());
+            messageText.setReact(new ArrayList<>());
             messageText.setSeen(List.of(User.builder().id(sonpham.getId()).build(), User.builder().id(leon.getId()).build()));
             if (i % 2 == 0) {
                 messageText.setReceiver(User.builder().id(sonpham.getId()).build());
@@ -222,6 +225,7 @@ class ChatBackEndApplicationTests {
             messageText.setMessageType(MessageType.Text);
             messageText.setContent(faker.text().text());
             messageText.setId(UUID.randomUUID().toString());
+            messageText.setReact(new ArrayList<>());
             messageText.setSeen(List.of(User.builder().id(sonpham.getId()).build(), User.builder().id(cuong.getId()).build()));
             if (i % 2 == 0) {
                 messageText.setReceiver(User.builder().id(sonpham.getId()).build());
@@ -284,7 +288,7 @@ class ChatBackEndApplicationTests {
     }
     @Test
     void kkk() {
-        List<String> stringList = List.of("yGjQT5o0sleSmjHVDHT24SS8FAB2", "N7B7os8xFOMceSxRSIzQlkwr3N43", "RGpCgF0lR1aGVcttckhAbBHWcSp2", "Ukk2dSG2xlfYBOiih7C2pE7Ct542");
+        List<String> stringList = List.of("yGjQT5o0sleSmjHVDHT24SS8FAB2", "N7B7os8xFOMceSxRSIzQlkwr3N43", "RGpCgF0lR1aGVcttckhAbBHWcSp2");
         User son = userRepository.findById("jgfqCBTFdEgDmpHHXaNHdZV8B982").get();
         List<User> userList = userRepository.findAll();
         List<Friend> friends = new ArrayList<>();

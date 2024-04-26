@@ -8,6 +8,7 @@ import lombok.Setter;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.TypeAlias;
 import org.springframework.data.mongodb.core.mapping.Document;
+import vn.edu.iuh.fit.chat_backend.types.Emotion;
 
 import java.util.Objects;
 
@@ -20,18 +21,5 @@ import java.util.Objects;
 public class React {
     @JsonIgnoreProperties(value = {"conversation", "friendList","gender","coverImage","bio","phone","logOut","dob","avt","phone","userName","friendRequests"})
     private User user;
-    private String react;
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        React react = (React) o;
-        return Objects.equals(user, react.user);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(user);
-    }
+    private Emotion react;
 }
