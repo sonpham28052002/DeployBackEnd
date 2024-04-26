@@ -27,7 +27,7 @@ public class Message {
     private User sender;
     @JsonIgnoreProperties(value = {"conversation", "friendList","gender","coverImage","bio","phone","logOut","dob","avt","phone","userName","friendRequests"})
     private User receiver;
-    private String react;
+    private List<React> react;
     @JsonIgnoreProperties(value = {"conversation", "friendList","gender","coverImage","bio","phone","logOut","dob","avt","phone","userName","friendRequests"})
     private List<User> seen;
     private Message replyMessage;

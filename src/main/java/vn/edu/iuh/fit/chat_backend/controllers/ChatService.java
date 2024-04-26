@@ -1,8 +1,11 @@
 package vn.edu.iuh.fit.chat_backend.controllers;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
@@ -32,14 +35,27 @@ public class ChatService {
     private UserService userService;
 
     @MessageMapping("/react-message")
-    public String reactMessage(@Payload MessageText messageText, @Payload MessageFile messageFile) {
+    public void reactMessage(@Payload MessageText messageText, @Payload MessageFile messageFile) {
         if (messageText.getContent() == null) {
-            System.out.println(messageFile.getReact());
-            simpMessagingTemplate.convertAndSendToUser(messageFile.getId(), "react-message", messageFile.getReact());
+            boolean isGroup = messageFile.getReceiver().getId().indexOf("-") != -1;
+            if (isGroup){
+                // message group
+
+            }else{
+                Message message = messageService.reactMessageSingle(messageFile);
+                simpMessagingTemplate.convertAndSendToUser(messageFile.getId(), "react-message", message);
+            }
+
         } else {
-            System.out.println(messageText.getReact());
+            boolean isGroup = messageFile.getReceiver().getId().indexOf("-") != -1;
+            if (isGroup){
+                // message group
+
+            }else{
+                Message message = messageService.reactMessageSingle(messageText);
+                simpMessagingTemplate.convertAndSendToUser(messageText.getId(), "react-message",message);
+            }
         }
-        return "";
     }
 
     @MessageMapping("/retrieve-message")
@@ -215,12 +231,12 @@ public class ChatService {
 
 
     @MessageMapping("/private-single-message")
-    public void recMessageTextSingle(@Payload MessageText messageText, @Payload MessageFile messageFile) {
+    public void recMessageTextSingle(@Payload MessageText messageText, @Payload MessageFile messageFile , @Payload String replyMess) throws JsonProcessingException {
         if (messageText.getContent() == null) {
             // message file
             int index = messageFile.getReceiver().getId().indexOf("_");
             messageFile.setSenderDate(LocalDateTime.now());
-            messageFile.setSenderDate(LocalDateTime.now());
+            checkReplyMessage(messageFile, replyMess);
             if (index != -1) {
                 //conversation group
                 String idGroup = messageFile.getReceiver().getId().substring(messageFile.getReceiver().getId().indexOf("_") + 1, messageFile.getReceiver().getId().length());
@@ -236,11 +252,13 @@ public class ChatService {
                 simpMessagingTemplate.convertAndSendToUser(messageFile.getSender().getId() + "", "/singleChat", messageFile);
             }
         } else {
-            int index = messageFile.getReceiver().getId().indexOf("_");
+            int index = messageText.getReceiver().getId().indexOf("_");
             messageText.setSenderDate(LocalDateTime.now());
+            checkReplyMessage(messageText,replyMess);
             if (index != -1) {
                 //conversation group
                 String idGroup = messageText.getReceiver().getId().substring(messageText.getReceiver().getId().indexOf("_") + 1, messageText.getReceiver().getId().length());
+                System.out.println(idGroup);
                 List<Member> memberList = messageService.insertMessageGroup(messageText, idGroup);
                 if (memberList.size() != 0) {
                     for (Member member : memberList) {
@@ -258,6 +276,24 @@ public class ChatService {
                 simpMessagingTemplate.convertAndSendToUser(messageText.getSender().getId() + "", "/singleChat", messageText);
             }
 
+        }
+    }
+    public void checkReplyMessage(Message message,String reply) throws JsonProcessingException {
+        if (message.getReplyMessage() != null){
+            ObjectMapper mapper = new ObjectMapper();
+            mapper.registerModule(new JavaTimeModule());
+            mapper.disable(SerializationFeature.WRITE_DATE_KEYS_AS_TIMESTAMPS);
+            mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+            mapper.findAndRegisterModules();
+            JsonNode rootNode = mapper.readTree(reply);
+            JsonNode replyMess = rootNode.get("reply");
+            if ( message.getMessageType().equals(MessageType.Text) ){
+                MessageText text = mapper.treeToValue(replyMess,MessageText.class);
+                message.setReplyMessage(text);
+            }else{
+                MessageFile file = mapper.treeToValue(replyMess,MessageFile.class);
+                message.setReplyMessage(file);
+            }
         }
     }
 
@@ -400,11 +436,9 @@ public class ChatService {
         String idGroup = rootNode.get("idGroup").asText();
         String ownerId = rootNode.get("ownerId").asText();
 
-        System.out.println("aaaa");
         ConversationGroup group = userService.removeMemberInGroup(userId, idGroup, ownerId);
         if (group != null) {
             for (Member member : group.getMembers()) {
-                System.out.println("11");
                 simpMessagingTemplate.convertAndSendToUser(member.getMember().getId(), "/removeMemberInGroup", group);
             }
         }
