@@ -22,8 +22,10 @@ public class MessageService {
     public boolean insertMessageSingleSender(Message message) {
 
 
+        System.out.println(message.getReplyMessage());
         User sender = userRepository.findById(message.getSender().getId()).get();
         User receiver = message.getReceiver();
+        message.setReact(new ArrayList<>());
         message.setSenderDate(LocalDateTime.now());
         List<Conversation> conversationList = sender.getConversation();
         boolean containConversation = conversationList.contains(ConversationSingle.builder().user(User.builder().id(receiver.getId()).build()).build());
@@ -85,6 +87,7 @@ public class MessageService {
             List<Conversation> conversations = user.get().getConversation();
             for (Conversation conversation : conversations) {
                 if (conversation instanceof ConversationGroup && ((ConversationGroup) conversation).getIdGroup().trim().equals(idGroup.trim())) {
+                    message.setReact(new ArrayList<>());
                     conversation.getMessages().add(message);
                     conversation.setLastMessage();
                     userRepository.save(user.get());
@@ -208,6 +211,13 @@ public class MessageService {
         return false;
     }
 
+    /**
+     * xoá tin nhắn đơn
+     * @param message
+     * @param ownerID
+     * @param idGroup
+     * @return
+     */
     public boolean deleteMessageSingle(Message message, String ownerID, String idGroup) {
         try (Stream<User> userDB = userRepository.findById(ownerID).stream()) {
             Optional<User> user = null;
@@ -222,28 +232,15 @@ public class MessageService {
             }
             for (Conversation conversation : user.get().getConversation()) {
                 if (conversation instanceof ConversationSingle && ((ConversationSingle) conversation).getUser().getId().equals(userCon.getId())) {
-                    if (user.get().getConversation().get(indexCon).getMessages().size() <= 3) {
-                        int indexMess = user.get().getConversation().get(indexCon).getMessages().indexOf(message);
-                        List<Message> list = new ArrayList<>();
-                        for (int i = 0; i < user.get().getConversation().get(indexCon).getMessages().size(); i++) {
-                            if (i != indexMess) {
-                                list.add(user.get().getConversation().get(indexCon).getMessages().get(i));
-                            }
-                        }
-                        conversation.setMessages(list);
-                        user.get().getConversation().set(indexCon, conversation);
-                        userRepository.save(user.get());
+                    conversation.getMessages().remove(message);
+                    if (conversation.getMessages().size() == 0) {
+                        conversation.setLastMessage(null);
                     } else {
-                        conversation.getMessages().remove(message);
-                        if (conversation.getMessages().size() == 0){
-                            conversation.setLastMessage(null);
-                        }else {
-                            conversation.setLastMessage();
-                        }
-                        System.out.println(conversation.getMessages().size());
-                        System.out.println(user.get().getConversation().get(indexCon).getMessages().size());
-                        userRepository.save(user.get());
+                        conversation.setLastMessage();
                     }
+                    System.out.println(conversation.getMessages().size());
+                    System.out.println(user.get().getConversation().get(indexCon).getMessages().size());
+                    userRepository.save(user.get());
                     return true;
                 }
                 indexCon++;
@@ -254,10 +251,16 @@ public class MessageService {
         return false;
     }
 
+    /**
+     * gửi tin nhắn đơn
+     * @param message
+     * @return
+     */
     public boolean insertMessageSingleReceiver(Message message) {
 
         User sender = message.getSender();
         User receiver = userRepository.findById(message.getReceiver().getId()).get();
+        message.setReact(new ArrayList<>());
         List<Conversation> conversationList = receiver.getConversation();
         boolean containConversation = conversationList.contains(ConversationSingle.builder().user(User.builder().id(sender.getId()).build()).build());
         if (!containConversation) {
@@ -312,4 +315,36 @@ public class MessageService {
         }
         return null;
     }
+
+    public Message reactMessageSingle(Message message){
+        try {
+            Optional<User> userSender = userRepository.findById(message.getSender().getId());
+            Optional<User> userReceiver = userRepository.findById(message.getReceiver().getId());
+            if (userSender.isEmpty() || userReceiver.isEmpty()){
+                return null;
+            }
+            if (updateReactMessage(userSender.get(),message,userReceiver.get().getId())){
+                userRepository.save(userSender.get());
+            }
+            if (updateReactMessage(userReceiver.get(),message,userSender.get().getId())){
+                userRepository.save(userReceiver.get());
+            }
+            return message;
+        }catch (Exception exception){
+            exception.printStackTrace();
+        }
+        return null;
+    }
+
+    public boolean updateReactMessage(User user, Message message, String userCon){
+        for (Conversation conversation:user.getConversation()) {
+            if (conversation instanceof ConversationSingle && ((ConversationSingle) conversation).getUser().getId().trim().equals(userCon.trim())){
+                int index = conversation.getMessages().indexOf(message);
+                conversation.getMessages().get(index).setReact(message.getReact());
+                return true;
+            }
+        }
+        return  false;
+    }
+
 }

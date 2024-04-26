@@ -89,13 +89,19 @@ public class UserService {
         return friendRS;
     }
 
+    /**
+     * giải tán nhóm chat xoá conversation chat của các member
+     *
+     * @param conversationGroup
+     * @return
+     */
     public ConversationGroup disbandConversation(ConversationGroup conversationGroup) {
         try {
             for (Member member : conversationGroup.getMembers()) {
                 User user = userRepository.findById(member.getMember().getId()).get();
                 for (Conversation conversation : user.getConversation()) {
                     if (conversation instanceof ConversationGroup && ((ConversationGroup) conversation).getIdGroup().trim().equals(conversationGroup.getIdGroup().trim())) {
-                        ((ConversationGroup) conversation).setStatus(GroupStatus.DISBANDED);
+                        user.getConversation().remove(conversation);
                         break;
                     }
                 }
@@ -311,11 +317,13 @@ public class UserService {
 
     public ConversationGroup outGroup(String idGroup, String userId) {
         try {
-            User userRomeve = userRepository.findById(userId).get();
+            User userRemove = userRepository.findById(userId).get();
             ConversationGroup group = null;
-            for (Conversation conversation : userRomeve.getConversation()) {
+            for (Conversation conversation : userRemove.getConversation()) {
                 if (conversation instanceof ConversationGroup && ((ConversationGroup) conversation).getIdGroup().equals(idGroup.trim())) {
                     group = (ConversationGroup) conversation;
+                    userRemove.getConversation().remove(conversation);
+                    userRepository.save(userRemove);
                     break;
                 }
             }
@@ -326,6 +334,7 @@ public class UserService {
                         User user = userRepository.findById(member.getMember().getId()).get();
                         for (Conversation conversation : user.getConversation()) {
                             if (conversation instanceof ConversationGroup && ((ConversationGroup) conversation).getIdGroup().trim().equals(idGroup.trim())) {
+
                                 Member memberRemove = Member.builder().member(User.builder().id(userId.trim()).build()).memberType(MemberType.LEFT_MEMBER).build();
                                 int index = ((ConversationGroup) conversation).getMembers().indexOf(memberRemove);
                                 ((ConversationGroup) conversation).getMembers().set(index, memberRemove);
@@ -351,28 +360,30 @@ public class UserService {
         try {
             int index = 0;
             ConversationGroup group = null;
-            User user = userRepository.findById(ownerId).get();
+            User user = userRepository.findById(userId).get();
             for (Conversation conversation : user.getConversation()) {
                 if (conversation instanceof ConversationGroup && ((ConversationGroup) conversation).getIdGroup().trim().equals(idGroup.trim())) {
                     Member memberRemove = Member.builder().member(User.builder().id(userId.trim()).build()).memberType(MemberType.LEFT_MEMBER).build();
                     index = ((ConversationGroup) conversation).getMembers().indexOf(memberRemove);
                     ((ConversationGroup) conversation).getMembers().set(index, memberRemove);
                     group = (ConversationGroup) conversation;
+                    user.getConversation().remove(conversation);
+                    userRepository.save(user);
                     break;
                 }
             }
             if (group != null) {
                 for (Member member : group.getMembers()) {
-                    int i = 0;
+                    if (!member.getMemberType().equals(MemberType.LEFT_MEMBER)){
                         User user1 = userRepository.findById(member.getMember().getId()).get();
                         for (Conversation conversation : user1.getConversation()) {
                             if (conversation instanceof ConversationGroup && ((ConversationGroup) conversation).getIdGroup().trim().equals(group.getIdGroup().trim())) {
-                                user1.getConversation().set(i, group);
+                                ((ConversationGroup) conversation).setMembers(group.getMembers());
                                 userRepository.save(user1);
                                 break;
                             }
-                            i++;
                         }
+                    }
                 }
                 return group;
             }
