@@ -291,7 +291,7 @@ public class ChatService {
             mapper.findAndRegisterModules();
             JsonNode rootNode = mapper.readTree(reply);
             JsonNode replyMess = rootNode.get("reply");
-            if ( message.getMessageType().equals(MessageType.Text) ){
+            if ( message.getReplyMessage().getMessageType().equals(MessageType.Text) ){
                 MessageText text = mapper.treeToValue(replyMess,MessageText.class);
                 message.setReplyMessage(text);
             }else{
