@@ -43,21 +43,30 @@ public class ChatService {
                 String idGroup = messageFile.getReceiver().getId();
                 MessageFile message = (MessageFile) messageService.reactMessageGroup(messageFile,idGroup);
                 simpMessagingTemplate.convertAndSendToUser(messageFile.getId(), "react-message", message);
+                simpMessagingTemplate.convertAndSendToUser(messageFile.getReceiver().getId(), "react-message", message);
+
             }else{
                 Message message = messageService.reactMessageSingle(messageFile);
                 simpMessagingTemplate.convertAndSendToUser(messageFile.getId(), "react-message", message);
+                simpMessagingTemplate.convertAndSendToUser(messageFile.getReceiver().getId(), "react-message", message);
+                simpMessagingTemplate.convertAndSendToUser(messageFile.getSender().getId(), "react-message", message);
             }
 
         } else {
             boolean isGroup = messageText.getReceiver().getId().indexOf("-") != -1;
+
             if (isGroup){
                 // message group
-                String idGroup = messageText.getReceiver().getId();
+                String idGroup = messageText.getReceiver().getId().substring(messageText.getReceiver().getId().indexOf("_")+1);
                 MessageText message = (MessageText) messageService.reactMessageGroup(messageText,idGroup);
                 simpMessagingTemplate.convertAndSendToUser(messageText.getId(), "react-message", message);
+                simpMessagingTemplate.convertAndSendToUser(messageText.getReceiver().getId(), "react-message", message);
             }else{
                 Message message = messageService.reactMessageSingle(messageText);
                 simpMessagingTemplate.convertAndSendToUser(messageText.getId(), "react-message",message);
+                simpMessagingTemplate.convertAndSendToUser(messageText.getId(), "react-message", message);
+                simpMessagingTemplate.convertAndSendToUser(messageText.getReceiver().getId(), "react-message", message);
+                simpMessagingTemplate.convertAndSendToUser(messageText.getSender().getId(), "react-message", message);
             }
         }
     }

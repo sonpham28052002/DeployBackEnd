@@ -1,8 +1,14 @@
 package vn.edu.iuh.fit.chat_backend.controllers;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import net.datafaker.Faker;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
+import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.messaging.handler.annotation.Payload;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.*;
 import vn.edu.iuh.fit.chat_backend.models.*;
 import vn.edu.iuh.fit.chat_backend.repositories.UserRepository;
@@ -17,6 +23,10 @@ public class UserController {
     private UserRepository userRepository;
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private SimpMessagingTemplate simpMessagingTemplate;
+
     @GetMapping("/all")
     public List<User> getAll() {
         return userRepository.findAll();
@@ -24,8 +34,8 @@ public class UserController {
 
     @GetMapping("/getUserByPhone")
     public Optional<User> getUserByPhone(@RequestParam String phone) {
-        if (phone.indexOf("0") !=-1){
-            phone = phone.substring(0 , phone.indexOf("0")) + phone.substring(phone.indexOf("0")+1 ,phone.length());
+        if (phone.indexOf("0") != -1) {
+            phone = phone.substring(0, phone.indexOf("0")) + phone.substring(phone.indexOf("0") + 1, phone.length());
         }
         return userService.getUserByPhone(phone);
     }
@@ -34,14 +44,14 @@ public class UserController {
     public Optional<User> getUserById(@RequestParam String id) {
         System.out.println(id);
         Optional<User> user = userRepository.findById(id);
-        for (Conversation conversation:user.get().getConversation()) {
-            if (conversation instanceof ConversationSingle){
+        for (Conversation conversation : user.get().getConversation()) {
+            if (conversation instanceof ConversationSingle) {
                 String idUserConversation = ((ConversationSingle) conversation).getUser().getId();
-                User userConversation =userRepository.findById(idUserConversation).get();
+                User userConversation = userRepository.findById(idUserConversation).get();
                 ((ConversationSingle) conversation).setUser(userConversation);
             }
         }
-        for (Friend friend:user.get().getFriendList()) {
+        for (Friend friend : user.get().getFriendList()) {
             User user1 = userRepository.findById(friend.getUser().getId()).get();
             friend.setUser(user1);
         }
@@ -49,13 +59,13 @@ public class UserController {
     }
 
     @GetMapping("/getFriendRequestListByOwnerId")
-    public List<FriendRequest> getFriendRequestListByOwnerId(@RequestParam String owner){
+    public List<FriendRequest> getFriendRequestListByOwnerId(@RequestParam String owner) {
         Optional<User> user = userRepository.findById(owner);
-        for (FriendRequest friendRequest:user.get().getFriendRequests()) {
-            if (!user.get().equals(friendRequest.getSender())){
+        for (FriendRequest friendRequest : user.get().getFriendRequests()) {
+            if (!user.get().equals(friendRequest.getSender())) {
                 User user1 = userRepository.findById(friendRequest.getSender().getId()).get();
                 friendRequest.setSender(User.builder().id(user1.getId()).userName(user1.getUserName()).avt(user1.getAvt()).build());
-            }else{
+            } else {
                 User user1 = userRepository.findById(friendRequest.getReceiver().getId()).get();
                 friendRequest.setReceiver(User.builder().id(user1.getId()).userName(user1.getUserName()).avt(user1.getAvt()).build());
             }
@@ -67,7 +77,7 @@ public class UserController {
     @GetMapping("/getInfoUserById")
     public Optional<User> getInfoUserById(@RequestParam String id) {
         Optional<User> user = userRepository.findById(id);
-        if (user.isPresent()){
+        if (user.isPresent()) {
             user.get().setConversation(null);
             user.get().setFriendList(null);
         }
@@ -126,6 +136,12 @@ public class UserController {
         if (user1.isPresent()) {
             user.setConversation(user1.get().getConversation());
             user.setFriendList(user1.get().getFriendList());
+        }
+        User userRS = null;
+        userRS = userRepository.save(user);
+        simpMessagingTemplate.convertAndSendToUser(userRS.getId(), "/updateAvt", user);
+        for (Friend friend : userRS.getFriendList()) {
+            simpMessagingTemplate.convertAndSendToUser(friend.getUser().getId(), "/updateAvt", user);
         }
         return userRepository.save(user);
     }

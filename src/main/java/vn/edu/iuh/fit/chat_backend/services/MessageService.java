@@ -267,6 +267,7 @@ public class MessageService {
             System.out.println("not contain");
             ConversationSingle conversationSingle = new ConversationSingle();
             conversationSingle.setUser(sender);
+            conversationSingle.setConversationType(ConversationType.single);
             conversationSingle.setUpdateLast(LocalDateTime.now());
             conversationSingle.setMessages(List.of(message));
             conversationSingle.setLastMessage();
@@ -278,6 +279,7 @@ public class MessageService {
             int index = conversationList.indexOf(ConversationSingle.builder().user(User.builder().id(sender.getId()).build()).build());
             Conversation conversation = conversationList.get(index);
             conversation.setUpdateLast(LocalDateTime.now());
+            conversation.setConversationType(ConversationType.single);
             List<Message> messageList = conversation.getMessages();
             messageList.add(message);
             conversation.setMessages(messageList);
