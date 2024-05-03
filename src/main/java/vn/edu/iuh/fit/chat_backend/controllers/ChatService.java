@@ -40,17 +40,21 @@ public class ChatService {
             boolean isGroup = messageFile.getReceiver().getId().indexOf("-") != -1;
             if (isGroup){
                 // message group
-
+                String idGroup = messageFile.getReceiver().getId();
+                MessageFile message = (MessageFile) messageService.reactMessageGroup(messageFile,idGroup);
+                simpMessagingTemplate.convertAndSendToUser(messageFile.getId(), "react-message", message);
             }else{
                 Message message = messageService.reactMessageSingle(messageFile);
                 simpMessagingTemplate.convertAndSendToUser(messageFile.getId(), "react-message", message);
             }
 
         } else {
-            boolean isGroup = messageFile.getReceiver().getId().indexOf("-") != -1;
+            boolean isGroup = messageText.getReceiver().getId().indexOf("-") != -1;
             if (isGroup){
                 // message group
-
+                String idGroup = messageText.getReceiver().getId();
+                MessageText message = (MessageText) messageService.reactMessageGroup(messageText,idGroup);
+                simpMessagingTemplate.convertAndSendToUser(messageText.getId(), "react-message", message);
             }else{
                 Message message = messageService.reactMessageSingle(messageText);
                 simpMessagingTemplate.convertAndSendToUser(messageText.getId(), "react-message",message);
@@ -287,7 +291,7 @@ public class ChatService {
             mapper.findAndRegisterModules();
             JsonNode rootNode = mapper.readTree(reply);
             JsonNode replyMess = rootNode.get("reply");
-            if ( message.getMessageType().equals(MessageType.Text) ){
+            if ( message.getReplyMessage().getMessageType().equals(MessageType.Text) ){
                 MessageText text = mapper.treeToValue(replyMess,MessageText.class);
                 message.setReplyMessage(text);
             }else{
