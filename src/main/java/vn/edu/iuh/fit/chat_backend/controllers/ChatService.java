@@ -40,7 +40,7 @@ public class ChatService {
             boolean isGroup = messageFile.getReceiver().getId().indexOf("-") != -1;
             if (isGroup){
                 // message group
-                String idGroup = messageFile.getReceiver().getId();
+                String idGroup = messageText.getReceiver().getId().substring(messageText.getReceiver().getId().indexOf("_")+1);
                 MessageFile message = (MessageFile) messageService.reactMessageGroup(messageFile,idGroup);
                 simpMessagingTemplate.convertAndSendToUser(messageFile.getId(), "react-message", message);
                 simpMessagingTemplate.convertAndSendToUser(messageFile.getReceiver().getId(), "react-message", message);
