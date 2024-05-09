@@ -13,6 +13,7 @@ import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
 import vn.edu.iuh.fit.chat_backend.models.*;
+import vn.edu.iuh.fit.chat_backend.services.MessageNotificationService;
 import vn.edu.iuh.fit.chat_backend.services.MessageService;
 import vn.edu.iuh.fit.chat_backend.services.UserService;
 import vn.edu.iuh.fit.chat_backend.types.GroupStatus;
@@ -34,6 +35,8 @@ public class ChatService {
     @Autowired
     private UserService userService;
 
+    @Autowired
+    private MessageNotificationService notificationService;
     @MessageMapping("/react-message")
     public void reactMessage(@Payload MessageText messageText, @Payload MessageFile messageFile) {
         if (messageText.getContent() == null) {
@@ -340,11 +343,13 @@ public class ChatService {
         ObjectMapper mapper = new ObjectMapper();
         JsonNode rootNode = mapper.readTree(ownerID);
         String ownerIDGroup = rootNode.get("ownerID").asText();
+
         ConversationGroup groupRS = userService.grantRoleMemberV2(conversationGroup, ownerIDGroup);
         if (groupRS != null) {
             for (Member member : groupRS.getMembers()) {
                 System.out.println(member.getMemberType());
                 simpMessagingTemplate.convertAndSendToUser(member.getMember().getId(), "/grantRoleMember", groupRS);
+
             }
         }
     }
@@ -494,7 +499,6 @@ public class ChatService {
         }
     }
     @MessageMapping("/addMemberIntoGroup")
-
     public void addMemberIntoGroup(@Payload ConversationGroup conversationGroup, @Payload String ownerId) throws JsonProcessingException {
         ObjectMapper mapper = new ObjectMapper();
         JsonNode rootNode = mapper.readTree(ownerId);
@@ -509,4 +513,6 @@ public class ChatService {
             }
         }
     }
+
+
 }
