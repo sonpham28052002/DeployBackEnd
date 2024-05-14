@@ -7,7 +7,7 @@ public enum Emotion {
     SAD("Sad"),
     HAPPY("Haha"),
     ANGRY("Angry"),
-    CRYING("Crying"),
+    LIKE("LIKE"),
     HEART("Heart");
     private final String description;
 

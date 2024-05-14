@@ -13,6 +13,7 @@ import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
 import vn.edu.iuh.fit.chat_backend.models.*;
+import vn.edu.iuh.fit.chat_backend.services.MessageNotificationService;
 import vn.edu.iuh.fit.chat_backend.services.MessageService;
 import vn.edu.iuh.fit.chat_backend.services.UserService;
 import vn.edu.iuh.fit.chat_backend.types.GroupStatus;
@@ -34,30 +35,41 @@ public class ChatService {
     @Autowired
     private UserService userService;
 
+    @Autowired
+    private MessageNotificationService notificationService;
     @MessageMapping("/react-message")
     public void reactMessage(@Payload MessageText messageText, @Payload MessageFile messageFile) {
         if (messageText.getContent() == null) {
             boolean isGroup = messageFile.getReceiver().getId().indexOf("-") != -1;
             if (isGroup){
                 // message group
-                String idGroup = messageFile.getReceiver().getId();
+                String idGroup = messageText.getReceiver().getId().substring(messageText.getReceiver().getId().indexOf("_")+1);
                 MessageFile message = (MessageFile) messageService.reactMessageGroup(messageFile,idGroup);
                 simpMessagingTemplate.convertAndSendToUser(messageFile.getId(), "react-message", message);
+                simpMessagingTemplate.convertAndSendToUser(messageFile.getReceiver().getId(), "react-message", message);
+
             }else{
                 Message message = messageService.reactMessageSingle(messageFile);
                 simpMessagingTemplate.convertAndSendToUser(messageFile.getId(), "react-message", message);
+                simpMessagingTemplate.convertAndSendToUser(messageFile.getReceiver().getId(), "react-message", message);
+                simpMessagingTemplate.convertAndSendToUser(messageFile.getSender().getId(), "react-message", message);
             }
 
         } else {
             boolean isGroup = messageText.getReceiver().getId().indexOf("-") != -1;
+
             if (isGroup){
                 // message group
-                String idGroup = messageText.getReceiver().getId();
+                String idGroup = messageText.getReceiver().getId().substring(messageText.getReceiver().getId().indexOf("_")+1);
                 MessageText message = (MessageText) messageService.reactMessageGroup(messageText,idGroup);
                 simpMessagingTemplate.convertAndSendToUser(messageText.getId(), "react-message", message);
+                simpMessagingTemplate.convertAndSendToUser(messageText.getReceiver().getId(), "react-message", message);
             }else{
                 Message message = messageService.reactMessageSingle(messageText);
                 simpMessagingTemplate.convertAndSendToUser(messageText.getId(), "react-message",message);
+                simpMessagingTemplate.convertAndSendToUser(messageText.getId(), "react-message", message);
+                simpMessagingTemplate.convertAndSendToUser(messageText.getReceiver().getId(), "react-message", message);
+                simpMessagingTemplate.convertAndSendToUser(messageText.getSender().getId(), "react-message", message);
             }
         }
     }
@@ -331,11 +343,13 @@ public class ChatService {
         ObjectMapper mapper = new ObjectMapper();
         JsonNode rootNode = mapper.readTree(ownerID);
         String ownerIDGroup = rootNode.get("ownerID").asText();
+
         ConversationGroup groupRS = userService.grantRoleMemberV2(conversationGroup, ownerIDGroup);
         if (groupRS != null) {
             for (Member member : groupRS.getMembers()) {
                 System.out.println(member.getMemberType());
                 simpMessagingTemplate.convertAndSendToUser(member.getMember().getId(), "/grantRoleMember", groupRS);
+
             }
         }
     }
@@ -468,8 +482,23 @@ public class ChatService {
         }
     }
 
+    @MessageMapping("/outLeaderGroup")
+    public void outLeaderGroup(@Payload String node) throws JsonProcessingException {
+        ObjectMapper mapper = new ObjectMapper();
+        JsonNode rootNode = mapper.readTree(node);
+        String userId = rootNode.get("userId").asText();
+        String idGroup = rootNode.get("idGroup").asText();
+        ConversationGroup group = userService.outGroup(idGroup, userId);
+        if (group != null) {
+            for (Member member : group.getMembers()) {
+                if (!member.getMemberType().equals(MemberType.LEFT_MEMBER)) {
+                    simpMessagingTemplate.convertAndSendToUser(member.getMember().getId(), "/outGroup", group);
+                }
+            }
+            simpMessagingTemplate.convertAndSendToUser(userId, "/outGroup", group);
+        }
+    }
     @MessageMapping("/addMemberIntoGroup")
-
     public void addMemberIntoGroup(@Payload ConversationGroup conversationGroup, @Payload String ownerId) throws JsonProcessingException {
         ObjectMapper mapper = new ObjectMapper();
         JsonNode rootNode = mapper.readTree(ownerId);
@@ -484,4 +513,6 @@ public class ChatService {
             }
         }
     }
+
+
 }

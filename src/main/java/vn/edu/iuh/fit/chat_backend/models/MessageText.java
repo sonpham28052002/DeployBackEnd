@@ -12,7 +12,6 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @NoArgsConstructor
 public class MessageText extends Message{
     private String content;
-
     @Override
     public String toString() {
         return "MessageText{" +
