@@ -4,10 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import vn.edu.iuh.fit.chat_backend.models.*;
 import vn.edu.iuh.fit.chat_backend.repositories.UserRepository;
-import vn.edu.iuh.fit.chat_backend.types.ConversationType;
-import vn.edu.iuh.fit.chat_backend.types.GroupStatus;
-import vn.edu.iuh.fit.chat_backend.types.MemberType;
-import vn.edu.iuh.fit.chat_backend.types.MessageType;
+import vn.edu.iuh.fit.chat_backend.types.*;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -210,7 +207,16 @@ public class UserService {
             newConversation.setIdGroup(UUID.randomUUID().toString());
             newConversation.setNameGroup(conversationGroup.getNameGroup());
             newConversation.setConversationType(ConversationType.group);
-            newConversation.setMessages(new ArrayList<>());
+            // tạo notification tạo group
+            MessageNotification messageNotification = new MessageNotification();
+            messageNotification.setContent("đã tạo nhóm.");
+            messageNotification.setNotificationType(NotificationType.CREATE_GROUP);
+            messageNotification.setSender(User.builder().id(member.getMember().getId()).build());
+            messageNotification.setSeen(new ArrayList<>());
+            messageNotification.setReceiver(User.builder().id("group_"+newConversation.getIdGroup()).build());
+            messageNotification.setMessageType(MessageType.NOTIFICATION);
+            messageNotification.setSenderDate(LocalDateTime.now());
+            newConversation.setMessages(List.of(messageNotification));
             List<Member> members = new ArrayList<>();
             for (Member member1 : conversationGroup.getMembers()) {
                 members.add(Member.builder()

@@ -37,6 +37,7 @@ public class AzureStorageService {
         BlobParallelUploadOptions options = new BlobParallelUploadOptions(inputStream, length)
                 .setHeaders(headers);
         client.uploadWithResponse(options, null, Context.NONE);
+        System.out.println(client.getBlobUrl());
         return client.getBlobUrl();
     }
 

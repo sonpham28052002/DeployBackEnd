@@ -27,7 +27,11 @@ public enum MessageType {
     TXT("text/plain"),
     STICKER("image/sticker"),
     UNKNOWN("UNKNOWN"),
-    RETRIEVE("RETRIEVE");
+    RETRIEVE("RETRIEVE"),
+    NOTIFICATION("NOTIFICATION"),
+    CALLSINGLE("CALLSINGLE"),
+    CALLGROUP("CALLGROUP");
+
     private final String MessageType;
 
     MessageType(String type) {
