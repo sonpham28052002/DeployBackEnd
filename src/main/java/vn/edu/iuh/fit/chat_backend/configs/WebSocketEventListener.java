@@ -45,6 +45,7 @@ public class WebSocketEventListener {
     public void handleWebSocketDisconnectListener(SessionDisconnectEvent event) {
         String idSession = StompHeaderAccessor.wrap(event.getMessage()).getSessionId();
         String idUser = userConnect.get(idSession);
+        System.out.println(userConnect);
         userConnect.remove(idSession);
         if(idUser != null){
             sendUserOffline(idUser);
