@@ -79,7 +79,6 @@ public class ChatService {
         if (messageText.getContent() == null) {
             int index = messageFile.getReceiver().getId().indexOf("_");
             if (index == -1) {
-                System.out.println(messageFile);
                 Message messageNew = messageService.retrieveMessageSingle(messageFile);
                 simpMessagingTemplate.convertAndSendToUser(messageFile.getReceiver().getId(), "/retrieveMessage", messageNew);
                 simpMessagingTemplate.convertAndSendToUser(messageFile.getSender().getId(), "/retrieveMessage", messageNew);
@@ -98,7 +97,6 @@ public class ChatService {
         } else {
             int index = messageText.getReceiver().getId().indexOf("_");
             if (index == -1) {
-                System.out.println(messageText);
                 Message messageNew = messageService.retrieveMessageSingle(messageText);
                 simpMessagingTemplate.convertAndSendToUser(messageText.getReceiver().getId(), "/retrieveMessage", messageNew);
                 simpMessagingTemplate.convertAndSendToUser(messageText.getSender().getId(), "/retrieveMessage", messageNew);
@@ -128,22 +126,18 @@ public class ChatService {
         if (Group.trim().equals("")) {
             // single chat
             if (messageText.getContent() == null) {
-                System.out.println(messageFile);
                 messageService.deleteMessageSingle(messageFile, ownerId, Group);
                 simpMessagingTemplate.convertAndSendToUser(ownerId, "/deleteMessage", messageFile);
             } else {
-                System.out.println(messageText.getReceiver());
                 messageService.deleteMessageSingle(messageText, ownerId, Group);
                 simpMessagingTemplate.convertAndSendToUser(ownerId, "/deleteMessage", messageText);
             }
         } else {
             // group chat
             if (messageText.getContent() == null) {
-                System.out.println(messageFile);
                 messageService.deleteMessageGroup(messageFile, ownerId, Group);
                 simpMessagingTemplate.convertAndSendToUser(ownerId, "/deleteMessage", messageFile);
             } else {
-                System.out.println(messageText.getReceiver());
                 messageService.deleteMessageGroup(messageText, ownerId, Group);
                 simpMessagingTemplate.convertAndSendToUser(ownerId, "/deleteMessage", messageText);
             }
@@ -182,7 +176,6 @@ public class ChatService {
 
             for (MessageText messageText : messageTexts) {
                 messageText.setId(UUID.randomUUID().toString());
-                System.out.println("user: " + messageText.getReceiver().getId());
                 int index = messageText.getReceiver().getId().indexOf("_");
                 if (index == -1) {
                     messageText.setSenderDate(LocalDateTime.now());
@@ -274,7 +267,6 @@ public class ChatService {
             if (index != -1) {
                 //conversation group
                 String idGroup = messageText.getReceiver().getId().substring(messageText.getReceiver().getId().indexOf("_") + 1, messageText.getReceiver().getId().length());
-                System.out.println(idGroup);
                 List<Member> memberList = messageService.insertMessageGroup(messageText, idGroup);
                 if (memberList.size() != 0) {
                     for (Member member : memberList) {
@@ -347,7 +339,6 @@ public class ChatService {
         ConversationGroup groupRS = userService.grantRoleMemberV2(conversationGroup, ownerIDGroup);
         if (groupRS != null) {
             for (Member member : groupRS.getMembers()) {
-                System.out.println(member.getMemberType());
                 simpMessagingTemplate.convertAndSendToUser(member.getMember().getId(), "/grantRoleMember", groupRS);
 
             }
@@ -356,7 +347,6 @@ public class ChatService {
 
     @MessageMapping("/accept-friend-request")
     public FriendRequest acceptFriendRequest(@Payload FriendRequest friendRequest) {
-        System.out.println(friendRequest);
         if (userService.addFriend(friendRequest.getSender().getId(), friendRequest.getReceiver().getId())) {
             simpMessagingTemplate.convertAndSendToUser(friendRequest.getSender().getId(), "/acceptAddFriend", friendRequest);
             simpMessagingTemplate.convertAndSendToUser(friendRequest.getReceiver().getId(), "/acceptAddFriend", friendRequest);
@@ -374,7 +364,6 @@ public class ChatService {
         String userId = jsonNode.get("userId").asText();
         Friend friend = userService.Unfriend(ownerId, userId);
         Friend friend1 = userService.Unfriend(userId, ownerId);
-        System.out.println(friend);
         if (friend != null) {
             simpMessagingTemplate.convertAndSendToUser(ownerId, "/unfriend", friend1);
             simpMessagingTemplate.convertAndSendToUser(userId, "/unfriend", friend);
@@ -385,7 +374,6 @@ public class ChatService {
 
     @MessageMapping("/disbandConversation")
     public void disbandConversation(@Payload ConversationGroup conversationGroup) {
-        System.out.println(conversationGroup);
         ConversationGroup group = userService.disbandConversation(conversationGroup);
         if (group != null) {
             for (Member member : conversationGroup.getMembers()) {
@@ -399,7 +387,6 @@ public class ChatService {
 
     @MessageMapping("/createGroup")
     public ConversationGroup createGroup(@Payload ConversationGroup conversationGroup) throws JsonProcessingException {
-        System.out.println(conversationGroup);
         if (!conversationGroup.getMembers().isEmpty()) {
             Member userCreate = conversationGroup.getMembers().stream()
                     .filter(item -> item.getMemberType().equals(MemberType.GROUP_LEADER))
@@ -432,7 +419,6 @@ public class ChatService {
     @MessageMapping("QR")
     public SendQR recMessageQR(@Payload SendQR sendQR) {
         simpMessagingTemplate.convertAndSendToUser(sendQR.getIp(), "/QR", sendQR);
-        System.out.println(sendQR);
         return sendQR;
     }
 
@@ -440,7 +426,6 @@ public class ChatService {
     @SendTo("/video-call")
     public String sendVideo(String videoData) {
         // Xử lý dữ liệu video và gửi đến tất cả các subscriber
-        System.out.println(videoData);
         simpMessagingTemplate.convertAndSendToUser("video", "/nhan", videoData);
 
         return videoData;
@@ -469,9 +454,6 @@ public class ChatService {
         String userId = rootNode.get("userId").asText();
         String idGroup = rootNode.get("idGroup").asText();
         ConversationGroup group = userService.outGroup(idGroup, userId);
-        System.out.println(node);
-        System.out.println(userId);
-        System.out.println(idGroup);
         if (group != null) {
             for (Member member : group.getMembers()) {
                 if (!member.getMemberType().equals(MemberType.LEFT_MEMBER)) {
@@ -504,7 +486,6 @@ public class ChatService {
         JsonNode rootNode = mapper.readTree(ownerId);
         String ownerIDGroup = rootNode.get("ownerID").asText();
         ConversationGroup group = userService.addMemberIntoGroup(conversationGroup, ownerIDGroup);
-        System.out.println(group.getMembers().size());
         if (group != null) {
             for (Member member : group.getMembers()) {
                 if (!member.getMemberType().equals(MemberType.LEFT_MEMBER)) {
