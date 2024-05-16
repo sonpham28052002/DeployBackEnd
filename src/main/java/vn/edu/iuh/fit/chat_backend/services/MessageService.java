@@ -30,7 +30,6 @@ public class MessageService {
         List<Conversation> conversationList = sender.getConversation();
         boolean containConversation = conversationList.contains(ConversationSingle.builder().user(User.builder().id(receiver.getId()).build()).build());
         if (!containConversation) {
-            System.out.println("not contain");
             ConversationSingle conversationSingle = new ConversationSingle();
             conversationSingle.setUser(receiver);
             conversationSingle.setConversationType(ConversationType.single);
@@ -42,7 +41,6 @@ public class MessageService {
             sender.setConversation(conversationList);
             userRepository.save(sender);
         } else {
-            System.out.println("contain");
             int index = conversationList.indexOf(ConversationSingle.builder().user(User.builder().id(receiver.getId()).build()).build());
             Conversation conversation = conversationList.get(index);
             conversation.setConversationType(ConversationType.single);
@@ -71,7 +69,6 @@ public class MessageService {
                 for (Member member : ((ConversationGroup) conversation).getMembers()) {
                     if (!member.getMemberType().equals(MemberType.LEFT_MEMBER)) {
                         addMessageGroupForMemberReceiver(message, idGroup, member.getMember().getId(), conversation);
-                        System.out.println(member.getMember().getUserName());
                         membersActive.add(member);
                     }
                 }

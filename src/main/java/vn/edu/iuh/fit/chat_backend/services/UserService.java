@@ -7,10 +7,7 @@ import vn.edu.iuh.fit.chat_backend.repositories.UserRepository;
 import vn.edu.iuh.fit.chat_backend.types.*;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 @Service
 public class UserService {
@@ -212,7 +209,7 @@ public class UserService {
             messageNotification.setContent("đã tạo nhóm.");
             messageNotification.setNotificationType(NotificationType.CREATE_GROUP);
             messageNotification.setSender(User.builder().id(member.getMember().getId()).build());
-            messageNotification.setSeen(new ArrayList<>());
+            messageNotification.setSeen(new HashSet<>());
             messageNotification.setReceiver(User.builder().id("group_"+newConversation.getIdGroup()).build());
             messageNotification.setMessageType(MessageType.NOTIFICATION);
             messageNotification.setSenderDate(LocalDateTime.now());

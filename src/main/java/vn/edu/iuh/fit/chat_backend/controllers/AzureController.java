@@ -28,10 +28,6 @@ public class AzureController {
         String nameNew =  name.substring(0,name.lastIndexOf("."));
         return azureStorageService.uploadFile(nameNew+"."+type,file.getInputStream(),file.getSize(),file.getContentType());
     }
-    @GetMapping("/file")
-    public String string(){
-        return "phạm thanh son";
-    }
 
 
 }
