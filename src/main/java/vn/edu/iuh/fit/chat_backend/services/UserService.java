@@ -207,6 +207,7 @@ public class UserService {
             // tạo notification tạo group
             MessageNotification messageNotification = new MessageNotification();
             messageNotification.setContent("đã tạo nhóm.");
+            messageNotification.setId(UUID.randomUUID().toString());
             messageNotification.setNotificationType(NotificationType.CREATE_GROUP);
             messageNotification.setSender(User.builder().id(member.getMember().getId()).build());
             messageNotification.setSeen(new HashSet<>());
@@ -214,6 +215,7 @@ public class UserService {
             messageNotification.setMessageType(MessageType.NOTIFICATION);
             messageNotification.setSenderDate(LocalDateTime.now());
             newConversation.setMessages(List.of(messageNotification));
+            conversationGroup.setLastMessage(messageNotification);
             List<Member> members = new ArrayList<>();
             for (Member member1 : conversationGroup.getMembers()) {
                 members.add(Member.builder()

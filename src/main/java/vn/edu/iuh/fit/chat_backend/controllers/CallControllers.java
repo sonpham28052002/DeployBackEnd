@@ -124,6 +124,7 @@ public class CallControllers {
                 for (Conversation conversation1 : userMember.getConversation()) {
                     if (conversation1 instanceof ConversationGroup && ((ConversationGroup) conversation1).getIdGroup().equals(idGroup.trim())) {
                         conversation1.getMessages().add(notification);
+                        conversation1.setLastMessage(notification);
                         userRepository.save(userMember);
                         simpMessagingTemplate.convertAndSendToUser(member.getMember().getId(), "groupChat", notification);
                         break;
