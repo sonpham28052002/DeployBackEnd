@@ -66,6 +66,7 @@ public class MessageNotificationService {
                 for (Conversation conversation : user.getConversation()) {
                     if (conversation instanceof ConversationGroup && ((ConversationGroup) conversation).getIdGroup().trim().equals(idGroup.trim())) {
                         conversation.getMessages().add(notification);
+                        conversation.setLastMessage();
                         userRepository.save(user);
                         simpMessagingTemplate.convertAndSendToUser(member.getMember().getId(), "groupChat", notification);
                         break;
@@ -81,6 +82,7 @@ public class MessageNotificationService {
                 for (Conversation conversation : user.getConversation()) {
                     if (conversation instanceof ConversationGroup && ((ConversationGroup) conversation).getIdGroup().trim().equals(group.getIdGroup().trim())) {
                         conversation.getMessages().add(notification);
+                        conversation.setLastMessage();
                         userRepository.save(user);
                         simpMessagingTemplate.convertAndSendToUser(member.getMember().getId(), "/groupChat", notification);
                         break;
@@ -104,6 +106,7 @@ public class MessageNotificationService {
                 for (Conversation conversation : user.getConversation()) {
                     if (conversation instanceof ConversationGroup && ((ConversationGroup) conversation).getIdGroup().trim().equals(idGroup.trim())) {
                         conversation.getMessages().addAll(notificationList);
+                        conversation.setLastMessage();
                         userRepository.save(user);
                         simpMessagingTemplate.convertAndSendToUser(member.getMember().getId(), "ChangeRoleNotification", notificationList);
                         break;
