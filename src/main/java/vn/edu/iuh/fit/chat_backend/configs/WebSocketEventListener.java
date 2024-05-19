@@ -66,6 +66,7 @@ public class WebSocketEventListener {
         }
         String userId = a.split(",")[0];
         if (userId.substring(0,userId.lastIndexOf("=")).equals("login") || userId.substring(0,userId.lastIndexOf("=")).equals("0")){
+            System.out.println(userId);
             return userId.substring(userId.lastIndexOf("=") + 1);
         }
        return null;

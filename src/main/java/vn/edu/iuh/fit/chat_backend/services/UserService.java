@@ -13,6 +13,8 @@ import java.util.*;
 public class UserService {
     @Autowired
     private UserRepository userRepository;
+    @Autowired
+    private MessageNotificationService messageNotificationService;
 
     /**
      * Kết bạn giữa 2 user
@@ -211,7 +213,7 @@ public class UserService {
             messageNotification.setNotificationType(NotificationType.CREATE_GROUP);
             messageNotification.setSender(User.builder().id(member.getMember().getId()).build());
             messageNotification.setSeen(new HashSet<>());
-            messageNotification.setReceiver(User.builder().id("group_"+newConversation.getIdGroup()).build());
+            messageNotification.setReceiver(User.builder().id("group_" + newConversation.getIdGroup()).build());
             messageNotification.setMessageType(MessageType.NOTIFICATION);
             messageNotification.setSenderDate(LocalDateTime.now());
             newConversation.setMessages(List.of(messageNotification));
@@ -272,6 +274,8 @@ public class UserService {
     public ConversationGroup grantRoleMemberV2(ConversationGroup conversationGroup, String ownerId) {
         try {
             List<Member> membersDEPUTYLEADER = conversationGroup.getMembers();
+            List<MessageNotification> messageNotifications = new ArrayList<>();
+
             System.out.println(ownerId);
             User owner = userRepository.findById(ownerId).get();
             ConversationGroup group = null;
@@ -279,8 +283,16 @@ public class UserService {
                 if (conversation instanceof ConversationGroup && ((ConversationGroup) conversation).getIdGroup().trim().equals(conversationGroup.getIdGroup().trim())) {
                     for (Member member : ((ConversationGroup) conversation).getMembers()) {
                         if (membersDEPUTYLEADER.contains(member)) {
+                            if (!member.getMemberType().equals(MemberType.DEPUTY_LEADER)) {
+                                MessageNotification notification = messageNotificationService.createNotification("đã phân phó nhóm cho", ownerId, member.getMember().getId(), conversationGroup.getIdGroup(), NotificationType.CHANGE_ROLE);
+                                messageNotifications.add(notification);
+                            }
                             member.setMemberType(MemberType.DEPUTY_LEADER);
                         } else if (!member.getMember().getId().trim().equals(ownerId.trim()) && !member.getMemberType().equals(MemberType.LEFT_MEMBER)) {
+                            if (member.getMemberType().equals(MemberType.DEPUTY_LEADER)) {
+                                MessageNotification notification = messageNotificationService.createNotification("tước quyền phó nhóm của", ownerId, member.getMember().getId(), conversationGroup.getIdGroup(), NotificationType.CHANGE_ROLE);
+                                messageNotifications.add(notification);
+                            }
                             member.setMemberType(MemberType.MEMBER);
                         }
                     }
@@ -299,6 +311,7 @@ public class UserService {
                         }
                     }
                 }
+                messageNotificationService.insertListMessageNotification(messageNotifications,group.getIdGroup(),ownerId);
                 return group;
             }
             return null;
@@ -343,6 +356,7 @@ public class UserService {
                                 Member memberRemove = Member.builder().member(User.builder().id(userId.trim()).build()).memberType(MemberType.LEFT_MEMBER).build();
                                 int index = ((ConversationGroup) conversation).getMembers().indexOf(memberRemove);
                                 ((ConversationGroup) conversation).getMembers().set(index, memberRemove);
+
                                 userRepository.save(user);
                                 if (groupRS == null) {
                                     groupRS = (ConversationGroup) conversation;
@@ -379,7 +393,7 @@ public class UserService {
             }
             if (group != null) {
                 for (Member member : group.getMembers()) {
-                    if (!member.getMemberType().equals(MemberType.LEFT_MEMBER)){
+                    if (!member.getMemberType().equals(MemberType.LEFT_MEMBER)) {
                         User user1 = userRepository.findById(member.getMember().getId()).get();
                         for (Conversation conversation : user1.getConversation()) {
                             if (conversation instanceof ConversationGroup && ((ConversationGroup) conversation).getIdGroup().trim().equals(group.getIdGroup().trim())) {
