@@ -10,7 +10,8 @@ public enum NotificationType {
     OUT_CALL("OUT_CALL"),
     CHANGE_ROLE("CHANGE_ROLE"),
     GET_OUT_GROUP("GET_OUT_GROUP"),
-    OUT_GROUP("OUT_GROUP");
+    OUT_GROUP("OUT_GROUP"),
+    LEADER_OUT_GROUP("LEADER_OUT_GROUP");
 
 
     private final String notify;

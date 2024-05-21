@@ -476,14 +476,23 @@ public class ChatService {
         }
     }
 
-    @MessageMapping("/outLeaderGroup")
+    @MessageMapping("/leaderOutGroup")
     public void outLeaderGroup(@Payload String node) throws JsonProcessingException {
         ObjectMapper mapper = new ObjectMapper();
         JsonNode rootNode = mapper.readTree(node);
         String userId = rootNode.get("userId").asText();
+        String leaderNew = rootNode.get("leaderNew").asText();
         String idGroup = rootNode.get("idGroup").asText();
-        ConversationGroup group = userService.outGroup(idGroup, userId);
-        if (group != null) {
+        if (leaderNew.trim().equals("")) {
+            ConversationGroup group = userService.leaderOutGroupNotExistLeaderNew(userId, idGroup);
+            for (Member member : group.getMembers()) {
+                if (!member.getMemberType().equals(MemberType.LEFT_MEMBER)) {
+                    simpMessagingTemplate.convertAndSendToUser(member.getMember().getId(), "/outGroup", group);
+                }
+            }
+            simpMessagingTemplate.convertAndSendToUser(userId, "/outGroup", group);
+        } else {
+            ConversationGroup group = userService.leaderOutGroupExistLeaderNew(userId, leaderNew, idGroup);
             for (Member member : group.getMembers()) {
                 if (!member.getMemberType().equals(MemberType.LEFT_MEMBER)) {
                     simpMessagingTemplate.convertAndSendToUser(member.getMember().getId(), "/outGroup", group);
