@@ -216,7 +216,7 @@ public class UserService {
             messageNotification.setMessageType(MessageType.NOTIFICATION);
             messageNotification.setSenderDate(LocalDateTime.now());
             newConversation.setMessages(List.of(messageNotification));
-            conversationGroup.setLastMessage(messageNotification);
+            newConversation.setLastMessage(messageNotification);
             List<Member> members = new ArrayList<>();
             for (Member member1 : conversationGroup.getMembers()) {
                 members.add(Member.builder()
@@ -224,7 +224,6 @@ public class UserService {
                         .memberType(member1.getMemberType()).build());
             }
             newConversation.setMembers(members);
-
             newConversation.setUpdateLast(LocalDateTime.now());
 
             userCreate.getConversation().add(newConversation);

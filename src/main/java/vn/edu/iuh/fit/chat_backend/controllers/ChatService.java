@@ -400,6 +400,7 @@ public class ChatService {
                     .orElse(null);
             if (userCreate != null) {
                 ConversationGroup groupRS = userService.createGroup(conversationGroup, userCreate);
+                System.out.println(groupRS.getLastMessage().getMessageType());
                 for (Member member : conversationGroup.getMembers()) {
                     simpMessagingTemplate.convertAndSendToUser(member.getMember().getId(), "/createGroup", groupRS);
                 }
@@ -449,7 +450,8 @@ public class ChatService {
         if (group != null) {
             MessageNotification notification = messageNotificationService.createNotification("đã bị mời ra khỏi nhóm bởi", ownerId, userId, idGroup, NotificationType.GET_OUT_GROUP);
             messageNotificationService.insertMessageNotificationV2(notification, group);
-
+            group.setLastMessage(notification);
+            System.out.println(group.getLastMessage().getMessageType());
             for (Member member : group.getMembers()) {
                 simpMessagingTemplate.convertAndSendToUser(member.getMember().getId(), "/removeMemberInGroup", group);
             }
