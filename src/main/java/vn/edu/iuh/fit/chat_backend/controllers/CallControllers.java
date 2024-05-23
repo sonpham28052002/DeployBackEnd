@@ -92,7 +92,7 @@ public class CallControllers {
     public void addNotificationMessage(String userId, String idGroup, String type) {
         MessageNotification messageNotification = new MessageNotification();
         messageNotification.setSenderDate(LocalDateTime.now());
-        messageNotification.setSeen(List.of(User.builder().id(userId).build()));
+        messageNotification.setSeen(Set.of(User.builder().id(userId).build()));
         messageNotification.setMessageType(MessageType.NOTIFICATION);
         if (type.equals("join")) {
             messageNotification.setContent("đã tham gia cuộc gọi.");
@@ -124,6 +124,8 @@ public class CallControllers {
                 for (Conversation conversation1 : userMember.getConversation()) {
                     if (conversation1 instanceof ConversationGroup && ((ConversationGroup) conversation1).getIdGroup().equals(idGroup.trim())) {
                         conversation1.getMessages().add(notification);
+                        conversation1.setLastMessage(notification);
+                        userRepository.save(userMember);
                         simpMessagingTemplate.convertAndSendToUser(member.getMember().getId(), "groupChat", notification);
                         break;
                     }

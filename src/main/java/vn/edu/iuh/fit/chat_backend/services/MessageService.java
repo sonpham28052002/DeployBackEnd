@@ -20,9 +20,6 @@ public class MessageService {
 
 
     public boolean insertMessageSingleSender(Message message) {
-
-
-        System.out.println(message.getReplyMessage());
         User sender = userRepository.findById(message.getSender().getId()).get();
         User receiver = message.getReceiver();
         message.setReact(new ArrayList<>());
@@ -30,7 +27,6 @@ public class MessageService {
         List<Conversation> conversationList = sender.getConversation();
         boolean containConversation = conversationList.contains(ConversationSingle.builder().user(User.builder().id(receiver.getId()).build()).build());
         if (!containConversation) {
-            System.out.println("not contain");
             ConversationSingle conversationSingle = new ConversationSingle();
             conversationSingle.setUser(receiver);
             conversationSingle.setConversationType(ConversationType.single);
@@ -42,7 +38,6 @@ public class MessageService {
             sender.setConversation(conversationList);
             userRepository.save(sender);
         } else {
-            System.out.println("contain");
             int index = conversationList.indexOf(ConversationSingle.builder().user(User.builder().id(receiver.getId()).build()).build());
             Conversation conversation = conversationList.get(index);
             conversation.setConversationType(ConversationType.single);
@@ -54,6 +49,7 @@ public class MessageService {
             conversation.setUpdateLast(LocalDateTime.now());
             sender.setConversation(conversationList);
             userRepository.save(sender);
+
         }
         return true;
     }
@@ -71,7 +67,6 @@ public class MessageService {
                 for (Member member : ((ConversationGroup) conversation).getMembers()) {
                     if (!member.getMemberType().equals(MemberType.LEFT_MEMBER)) {
                         addMessageGroupForMemberReceiver(message, idGroup, member.getMember().getId(), conversation);
-                        System.out.println(member.getMember().getUserName());
                         membersActive.add(member);
                     }
                 }
@@ -109,7 +104,6 @@ public class MessageService {
 
 
     public Message retrieveMessageSingle(Message message) {
-        System.out.println(message.getId());
         Optional<User> userReceiver = userRepository.findById(message.getReceiver().getId());
         Optional<User> userSender = userRepository.findById(message.getSender().getId());
         // update message list receiver
@@ -148,7 +142,6 @@ public class MessageService {
 
 
     public List<Member> retrieveMessageGroup(Message message, String idGroup) {
-        System.out.println(message.getId());
         Optional<User> userSender = userRepository.findById(message.getSender().getId());
         List<Member> members = new ArrayList<>();
         List<Conversation> conversationsSender = userSender.get().getConversation();
@@ -238,8 +231,6 @@ public class MessageService {
                     } else {
                         conversation.setLastMessage();
                     }
-                    System.out.println(conversation.getMessages().size());
-                    System.out.println(user.get().getConversation().get(indexCon).getMessages().size());
                     userRepository.save(user.get());
                     return true;
                 }
@@ -264,7 +255,6 @@ public class MessageService {
         List<Conversation> conversationList = receiver.getConversation();
         boolean containConversation = conversationList.contains(ConversationSingle.builder().user(User.builder().id(sender.getId()).build()).build());
         if (!containConversation) {
-            System.out.println("not contain");
             ConversationSingle conversationSingle = new ConversationSingle();
             conversationSingle.setUser(sender);
             conversationSingle.setConversationType(ConversationType.single);
@@ -275,7 +265,6 @@ public class MessageService {
             receiver.setConversation(conversationList);
             userRepository.save(receiver);
         } else {
-            System.out.println("contain");
             int index = conversationList.indexOf(ConversationSingle.builder().user(User.builder().id(sender.getId()).build()).build());
             Conversation conversation = conversationList.get(index);
             conversation.setUpdateLast(LocalDateTime.now());
@@ -299,7 +288,6 @@ public class MessageService {
             for (Conversation conversation : user.get().getConversation()) {
                 if (conversation instanceof ConversationGroup && ((ConversationGroup) conversation).getIdGroup().trim().equals(groupId.trim())) {
                     user.get().getConversation().remove(conversation);
-                    System.out.println(conversation);
                     userRepository.save(user.get());
                     return conversation;
                 }
@@ -308,7 +296,6 @@ public class MessageService {
             for (Conversation conversation : user.get().getConversation()) {
                 if (conversation instanceof ConversationSingle && ((ConversationSingle) conversation).getUser().getId().trim().equals(userID)) {
                     user.get().getConversation().remove(conversation);
-                    System.out.println(conversation);
                     userRepository.save(user.get());
 
                     return conversation;

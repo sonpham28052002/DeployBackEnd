@@ -7,15 +7,14 @@ import vn.edu.iuh.fit.chat_backend.repositories.UserRepository;
 import vn.edu.iuh.fit.chat_backend.types.*;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 @Service
 public class UserService {
     @Autowired
     private UserRepository userRepository;
+    @Autowired
+    private MessageNotificationService messageNotificationService;
 
     /**
      * Kết bạn giữa 2 user
@@ -159,7 +158,6 @@ public class UserService {
         try {
             Optional<User> sender = userRepository.findById(senderId);
             Optional<User> receiver = userRepository.findById(receiverId);
-            System.out.println(senderId);
 
             if (receiver.isEmpty() || sender.isEmpty()) {
                 return null;
@@ -210,13 +208,15 @@ public class UserService {
             // tạo notification tạo group
             MessageNotification messageNotification = new MessageNotification();
             messageNotification.setContent("đã tạo nhóm.");
+            messageNotification.setId(UUID.randomUUID().toString());
             messageNotification.setNotificationType(NotificationType.CREATE_GROUP);
             messageNotification.setSender(User.builder().id(member.getMember().getId()).build());
-            messageNotification.setSeen(new ArrayList<>());
-            messageNotification.setReceiver(User.builder().id("group_"+newConversation.getIdGroup()).build());
+            messageNotification.setSeen(new HashSet<>());
+            messageNotification.setReceiver(User.builder().id("group_" + newConversation.getIdGroup()).build());
             messageNotification.setMessageType(MessageType.NOTIFICATION);
             messageNotification.setSenderDate(LocalDateTime.now());
             newConversation.setMessages(List.of(messageNotification));
+            newConversation.setLastMessage(messageNotification);
             List<Member> members = new ArrayList<>();
             for (Member member1 : conversationGroup.getMembers()) {
                 members.add(Member.builder()
@@ -224,7 +224,6 @@ public class UserService {
                         .memberType(member1.getMemberType()).build());
             }
             newConversation.setMembers(members);
-
             newConversation.setUpdateLast(LocalDateTime.now());
 
             userCreate.getConversation().add(newConversation);
@@ -273,15 +272,24 @@ public class UserService {
     public ConversationGroup grantRoleMemberV2(ConversationGroup conversationGroup, String ownerId) {
         try {
             List<Member> membersDEPUTYLEADER = conversationGroup.getMembers();
-            System.out.println(ownerId);
+            List<MessageNotification> messageNotifications = new ArrayList<>();
+
             User owner = userRepository.findById(ownerId).get();
             ConversationGroup group = null;
             for (Conversation conversation : owner.getConversation()) {
                 if (conversation instanceof ConversationGroup && ((ConversationGroup) conversation).getIdGroup().trim().equals(conversationGroup.getIdGroup().trim())) {
                     for (Member member : ((ConversationGroup) conversation).getMembers()) {
                         if (membersDEPUTYLEADER.contains(member)) {
+                            if (!member.getMemberType().equals(MemberType.DEPUTY_LEADER)) {
+                                MessageNotification notification = messageNotificationService.createNotification("đã phân phó nhóm cho", ownerId, member.getMember().getId(), conversationGroup.getIdGroup(), NotificationType.CHANGE_ROLE);
+                                messageNotifications.add(notification);
+                            }
                             member.setMemberType(MemberType.DEPUTY_LEADER);
                         } else if (!member.getMember().getId().trim().equals(ownerId.trim()) && !member.getMemberType().equals(MemberType.LEFT_MEMBER)) {
+                            if (member.getMemberType().equals(MemberType.DEPUTY_LEADER)) {
+                                MessageNotification notification = messageNotificationService.createNotification("tước quyền phó nhóm của", ownerId, member.getMember().getId(), conversationGroup.getIdGroup(), NotificationType.CHANGE_ROLE);
+                                messageNotifications.add(notification);
+                            }
                             member.setMemberType(MemberType.MEMBER);
                         }
                     }
@@ -300,6 +308,7 @@ public class UserService {
                         }
                     }
                 }
+                messageNotificationService.insertListMessageNotification(messageNotifications, group.getIdGroup(), ownerId);
                 return group;
             }
             return null;
@@ -344,6 +353,7 @@ public class UserService {
                                 Member memberRemove = Member.builder().member(User.builder().id(userId.trim()).build()).memberType(MemberType.LEFT_MEMBER).build();
                                 int index = ((ConversationGroup) conversation).getMembers().indexOf(memberRemove);
                                 ((ConversationGroup) conversation).getMembers().set(index, memberRemove);
+
                                 userRepository.save(user);
                                 if (groupRS == null) {
                                     groupRS = (ConversationGroup) conversation;
@@ -380,7 +390,7 @@ public class UserService {
             }
             if (group != null) {
                 for (Member member : group.getMembers()) {
-                    if (!member.getMemberType().equals(MemberType.LEFT_MEMBER)){
+                    if (!member.getMemberType().equals(MemberType.LEFT_MEMBER)) {
                         User user1 = userRepository.findById(member.getMember().getId()).get();
                         for (Conversation conversation : user1.getConversation()) {
                             if (conversation instanceof ConversationGroup && ((ConversationGroup) conversation).getIdGroup().trim().equals(group.getIdGroup().trim())) {
@@ -452,7 +462,6 @@ public class UserService {
                     break;
                 }
             }
-            System.out.println(group1);
             if (group1 != null) {
                 List<Message> messageList = group1.getMessages();
                 for (Member member : group1.getMembers()) {
@@ -468,9 +477,7 @@ public class UserService {
                                 break;
                             }
                         }
-                        System.out.println(groupCheck);
                         if (groupCheck == null) {
-                            System.out.println("aaa");
                             user1.getConversation().add(group1);
                             userRepository.save(user1);
                         }
@@ -491,6 +498,115 @@ public class UserService {
                     }
                 }
                 return group1;
+            }
+            return null;
+        } catch (Exception exception) {
+            exception.printStackTrace();
+        }
+        return null;
+    }
+
+    public ConversationGroup leaderOutGroupExistLeaderNew(String userId, String idLeaderNew,String idGroup) {
+        try {
+            User user = userRepository.findById(userId).get();
+            ConversationGroup group = null;
+            for (Conversation conversation : user.getConversation()) {
+                if (conversation instanceof ConversationGroup && ((ConversationGroup) conversation).getIdGroup().trim().equals(idGroup.trim())) {
+                    boolean checkLeaderOld = false;
+                    boolean checkLeaderNew = false;
+                    for (Member member : ((ConversationGroup) conversation).getMembers()) {
+                        if (!checkLeaderOld && member.getMember().getId().trim().equals(userId.trim())) {
+                            member.setMemberType(MemberType.LEFT_MEMBER);
+                            checkLeaderOld = true;
+                        }
+                        if (!checkLeaderNew && member.getMember().getId().equals(idLeaderNew)) {
+                            member.setMemberType(MemberType.GROUP_LEADER);
+                            checkLeaderNew = true;
+                        }
+                        if (checkLeaderOld && checkLeaderNew) {
+                            group = (ConversationGroup) conversation;
+                            break;
+                        }
+                    }
+                }
+            }
+            if (group != null) {
+
+                for (Member member : group.getMembers()) {
+                    User userMember = userRepository.findById(member.getMember().getId()).get();
+                    for (Conversation conversation : userMember.getConversation()) {
+                        if (conversation instanceof ConversationGroup && ((ConversationGroup) conversation).getIdGroup().trim().equals(idGroup.trim())) {
+                            if (userMember.getId().trim().equals(userId.trim())) {
+                                userMember.getConversation().remove(conversation);
+                                userRepository.save(userMember);
+                            } else {
+                                ((ConversationGroup) conversation).setMembers(group.getMembers());
+                                userRepository.save(userMember);
+                            }
+                            break;
+                        }
+                    }
+                }
+                MessageNotification notification = messageNotificationService.createNotification("đã nhường quyền trưởng nhóm lại cho", userId, idLeaderNew, idGroup, NotificationType.CHANGE_ROLE);
+                MessageNotification notification1 = messageNotificationService.createNotification("đã rời nhóm", userId, "", idGroup, NotificationType.OUT_GROUP);
+                List<MessageNotification> notificationList = List.of(notification, notification1);
+                messageNotificationService.insertListMessageNotification(notificationList, idGroup, idLeaderNew);
+                return group;
+            }
+            return null;
+        } catch (Exception exception) {
+            exception.printStackTrace();
+        }
+        return null;
+    }
+
+    public ConversationGroup leaderOutGroupNotExistLeaderNew(String userId, String idGroup) {
+        try {
+            User user = userRepository.findById(userId).get();
+            ConversationGroup group = null;
+            String idLeaderNew = "";
+            for (Conversation conversation : user.getConversation()) {
+                if (conversation instanceof ConversationGroup && ((ConversationGroup) conversation).getIdGroup().trim().equals(idGroup.trim())) {
+                    boolean checkLeaderOld = false;
+                    boolean checkLeaderNew = false;
+                    for (Member member : ((ConversationGroup) conversation).getMembers()) {
+                        if (!checkLeaderOld && member.getMember().getId().trim().equals(userId.trim())) {
+                            member.setMemberType(MemberType.LEFT_MEMBER);
+                            checkLeaderOld = true;
+                        }
+                        if (!checkLeaderNew && member.getMemberType().equals(MemberType.DEPUTY_LEADER)) {
+                            member.setMemberType(MemberType.GROUP_LEADER);
+                            idLeaderNew = member.getMember().getId();
+                            checkLeaderNew = true;
+                        }
+                        if (checkLeaderOld && checkLeaderNew) {
+                            group = (ConversationGroup) conversation;
+                            break;
+                        }
+                    }
+                }
+            }
+            if (group != null) {
+                for (Member member : group.getMembers()) {
+                    User userMember = userRepository.findById(member.getMember().getId()).get();
+                    for (Conversation conversation : userMember.getConversation()) {
+                        if (conversation instanceof ConversationGroup && ((ConversationGroup) conversation).getIdGroup().trim().equals(idGroup.trim())) {
+                            if (userMember.getId().trim().equals(userId.trim())) {
+                                userMember.getConversation().remove(conversation);
+                                userRepository.save(userMember);
+                            } else {
+                                ((ConversationGroup) conversation).setMembers(group.getMembers());
+                                userRepository.save(userMember);
+                            }
+                            break;
+                        }
+                    }
+                }
+                MessageNotification notification = messageNotificationService.createNotification("đã nhường quyền trưởng nhóm lại cho", userId, idLeaderNew, idGroup, NotificationType.CHANGE_ROLE);
+                MessageNotification notification1 = messageNotificationService.createNotification("đã rời nhóm", userId, "", idGroup, NotificationType.OUT_GROUP);
+                List<MessageNotification> notificationList = List.of(notification, notification1);
+                messageNotificationService.insertListMessageNotification(notificationList, idGroup, idLeaderNew);
+                return group;
             }
             return null;
         } catch (Exception exception) {
