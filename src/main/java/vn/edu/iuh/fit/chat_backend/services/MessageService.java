@@ -85,6 +85,7 @@ public class MessageService {
                     message.setReact(new ArrayList<>());
                     conversation.getMessages().add(message);
                     conversation.setLastMessage();
+                    conversation.setUpdateLast(LocalDateTime.now());
                     userRepository.save(user.get());
                     return true;
                 }

@@ -51,6 +51,7 @@ public class UserController {
                 ((ConversationSingle) conversation).setUser(userConversation);
             }
         }
+        Collections.sort(user.get().getConversation(), Comparator.comparing(Conversation::getUpdateLast).reversed());
         for (Friend friend : user.get().getFriendList()) {
             User user1 = userRepository.findById(friend.getUser().getId()).get();
             friend.setUser(user1);
