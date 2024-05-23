@@ -46,6 +46,7 @@ public class MessageController {
                             seen.add(User.builder().id(idSender).build());
                             message.setSeen(seen);
                         });
+                        conversation.setLastMessage();
                         userRepository.save(sender.get());
                         simpMessagingTemplate.convertAndSendToUser(idSender, "/SeenMessageSingle", conversation.getMessages());
                         updateSeenMessageSingleReceiver(idSender, idReceiver);
@@ -71,6 +72,7 @@ public class MessageController {
                             seen.add(User.builder().id(idUser).build());
                             message.setSeen(seen);
                         });
+                        conversation.setLastMessage();
                         userRepository.save(sender.get());
                         simpMessagingTemplate.convertAndSendToUser(idOwner, "/SeenMessageSingle", conversation.getMessages());
                     }
