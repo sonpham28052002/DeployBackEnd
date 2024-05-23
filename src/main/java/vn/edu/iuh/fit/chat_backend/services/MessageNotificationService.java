@@ -9,7 +9,10 @@ import vn.edu.iuh.fit.chat_backend.types.MemberType;
 import vn.edu.iuh.fit.chat_backend.types.MessageType;
 import vn.edu.iuh.fit.chat_backend.types.NotificationType;
 
+import java.time.LocalDateTime;
+import java.util.HashSet;
 import java.util.List;
+import java.util.UUID;
 
 @Service
 public class MessageNotificationService {
@@ -20,13 +23,35 @@ public class MessageNotificationService {
 
     public void sendNotification(String content, String idSender, String idReceiver, String idGroup, NotificationType type) {
         MessageNotification messageNotification = new MessageNotification();
+        messageNotification.setId(UUID.randomUUID().toString());
         messageNotification.setNotificationType(type);
         messageNotification.setMessageType(MessageType.NOTIFICATION);
         messageNotification.setContent(content);
+        messageNotification.setSeen(new HashSet<>());
+        messageNotification.setSenderDate(LocalDateTime.now());
         messageNotification.setSender(User.builder().id(idSender).build());
-        messageNotification.setUser(User.builder().id(idReceiver).build());
+        if (!idReceiver.equals("")) {
+            messageNotification.setUser(User.builder().id(idReceiver).build());
+        }
         messageNotification.setReceiver(User.builder().id("group_" + idGroup).build());
-        insertMessageNotification(messageNotification,idGroup,idSender);
+        insertMessageNotification(messageNotification, idGroup, idSender);
+    }
+
+
+    public MessageNotification createNotification(String content, String idSender, String idReceiver, String idGroup, NotificationType type) {
+        MessageNotification messageNotification = new MessageNotification();
+        messageNotification.setId(UUID.randomUUID().toString());
+        messageNotification.setNotificationType(type);
+        messageNotification.setMessageType(MessageType.NOTIFICATION);
+        messageNotification.setContent(content);
+        messageNotification.setSeen(new HashSet<>());
+        messageNotification.setSenderDate(LocalDateTime.now());
+        messageNotification.setSender(User.builder().id(idSender).build());
+        if (!idReceiver.equals("")) {
+            messageNotification.setUser(User.builder().id(idReceiver).build());
+        }
+        messageNotification.setReceiver(User.builder().id("group_" + idGroup).build());
+        return messageNotification;
     }
 
     public void insertMessageNotification(MessageNotification notification, String idGroup, String idSender) {
@@ -43,9 +68,50 @@ public class MessageNotificationService {
             if (!member.getMemberType().equals(MemberType.LEFT_MEMBER)) {
                 for (Conversation conversation : user.getConversation()) {
                     if (conversation instanceof ConversationGroup && ((ConversationGroup) conversation).getIdGroup().trim().equals(idGroup.trim())) {
-                         conversation.getMessages().add(notification);
-                         userRepository.save(user);
-                         simpMessagingTemplate.convertAndSendToUser(idGroup, "react-message", notification);
+                        conversation.getMessages().add(notification);
+                        conversation.setLastMessage();
+                        userRepository.save(user);
+                        simpMessagingTemplate.convertAndSendToUser(member.getMember().getId(), "groupChat", notification);
+                        break;
+                    }
+                }
+            }
+        }
+    }
+    public void insertMessageNotificationV2(MessageNotification notification, ConversationGroup group) {
+        for (Member member : group.getMembers()) {
+            User user = userRepository.findById(member.getMember().getId()).get();
+            if (!member.getMemberType().equals(MemberType.LEFT_MEMBER)) {
+                for (Conversation conversation : user.getConversation()) {
+                    if (conversation instanceof ConversationGroup && ((ConversationGroup) conversation).getIdGroup().trim().equals(group.getIdGroup().trim())) {
+                        conversation.getMessages().add(notification);
+                        conversation.setLastMessage();
+                        userRepository.save(user);
+                        simpMessagingTemplate.convertAndSendToUser(member.getMember().getId(), "/groupChat", notification);
+                        break;
+                    }
+                }
+            }
+        }
+    }
+    public void insertListMessageNotification(List<MessageNotification> notificationList, String idGroup, String idSender){
+        ConversationGroup group = null;
+        User sender = userRepository.findById(idSender).get();
+        for (Conversation conversation : sender.getConversation()) {
+            if (conversation instanceof ConversationGroup && ((ConversationGroup) conversation).getIdGroup().trim().equals(idGroup.trim())) {
+                group = (ConversationGroup) conversation;
+                break;
+            }
+        }
+        for (Member member : group.getMembers()) {
+            User user = userRepository.findById(member.getMember().getId()).get();
+            if (!member.getMemberType().equals(MemberType.LEFT_MEMBER)) {
+                for (Conversation conversation : user.getConversation()) {
+                    if (conversation instanceof ConversationGroup && ((ConversationGroup) conversation).getIdGroup().trim().equals(idGroup.trim())) {
+                        conversation.getMessages().addAll(notificationList);
+                        conversation.setLastMessage();
+                        userRepository.save(user);
+                        simpMessagingTemplate.convertAndSendToUser(member.getMember().getId(), "ChangeRoleNotification", notificationList);
                         break;
                     }
                 }

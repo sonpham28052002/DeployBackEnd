@@ -9,6 +9,7 @@ import vn.edu.iuh.fit.chat_backend.types.MessageType;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 @Document(collection = "messages")
 @TypeAlias("messages")
@@ -29,7 +30,7 @@ public class Message {
     private User receiver;
     private List<React> react;
     @JsonIgnoreProperties(value = {"conversation", "friendList","gender","coverImage","bio","phone","logOut","dob","avt","phone","userName","friendRequests"})
-    private List<User> seen;
+    private Set<User> seen;
     private Message replyMessage;
 
     @Override

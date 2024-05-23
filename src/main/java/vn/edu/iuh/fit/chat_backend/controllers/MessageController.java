@@ -14,6 +14,7 @@ import vn.edu.iuh.fit.chat_backend.types.MemberType;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 @RestController
 @RequestMapping(value = "/messages", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -41,7 +42,7 @@ public class MessageController {
                         return conversation.getMessages();
                     }else{
                         conversation.getMessages().forEach(message -> {
-                            List<User> seen = message.getSeen();
+                            Set <User> seen = message.getSeen();
                             seen.add(User.builder().id(idSender).build());
                             message.setSeen(seen);
                         });
@@ -66,7 +67,7 @@ public class MessageController {
                     List<Message> messageList = conversation.getMessages();
                     if (!messageList.get(messageList.size()-1).getSeen().contains(User.builder().id(idUser).build())){
                         conversation.getMessages().forEach(message -> {
-                            List<User> seen = message.getSeen();
+                            Set<User> seen = message.getSeen();
                             seen.add(User.builder().id(idUser).build());
                             message.setSeen(seen);
                         });
@@ -105,7 +106,7 @@ public class MessageController {
                 for (Conversation conversation:user.getConversation()) {
                     if (conversation instanceof ConversationGroup && ((ConversationGroup) conversation).getIdGroup().trim().equals(idGroup.trim())){
                         conversation.getMessages().forEach(message -> {
-                            List<User> seen = message.getSeen();
+                            Set<User> seen = message.getSeen();
                             seen.add(User.builder().id(idSender).build());
                             message.setSeen(seen);
                         });

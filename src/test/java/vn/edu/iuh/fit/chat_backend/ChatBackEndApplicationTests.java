@@ -19,10 +19,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 @SpringBootTest
 class ChatBackEndApplicationTests {
@@ -57,7 +54,7 @@ class ChatBackEndApplicationTests {
             messageText.setContent(faker.text().text());
             messageText.setId(UUID.randomUUID().toString());
             messageText.setReact(new ArrayList<>());
-            messageText.setSeen(List.of(User.builder().id(sonpham.getId()).build(), User.builder().id(cuong.getId()).build(), User.builder().id(leon.getId()).build()));
+            messageText.setSeen(Set.of(User.builder().id(sonpham.getId()).build(), User.builder().id(cuong.getId()).build(), User.builder().id(leon.getId()).build()));
             if (i % 2 == 0) {
                 messageText.setSender(User.builder().id(cuong.getId()).build());
             } else if (i % 3 == 0) {
@@ -123,7 +120,7 @@ class ChatBackEndApplicationTests {
             messageText.setContent(faker.text().text());
             messageText.setId(UUID.randomUUID().toString());
             messageText.setReact(new ArrayList<>());
-            messageText.setSeen(List.of(User.builder().id(sonpham.getId()).build(), User.builder().id(sonnguyen.getId()).build()));
+            messageText.setSeen(Set.of(User.builder().id(sonpham.getId()).build(), User.builder().id(sonnguyen.getId()).build()));
             if (i % 2 == 0) {
                 messageText.setReceiver(User.builder().id(sonpham.getId()).build());
                 messageText.setSender(User.builder().id(sonnguyen.getId()).build());
@@ -175,7 +172,7 @@ class ChatBackEndApplicationTests {
             messageText.setContent(faker.text().text());
             messageText.setId(UUID.randomUUID().toString());
             messageText.setReact(new ArrayList<>());
-            messageText.setSeen(List.of(User.builder().id(sonpham.getId()).build(), User.builder().id(leon.getId()).build()));
+            messageText.setSeen(Set.of(User.builder().id(sonpham.getId()).build(), User.builder().id(leon.getId()).build()));
             if (i % 2 == 0) {
                 messageText.setReceiver(User.builder().id(sonpham.getId()).build());
                 messageText.setSender(User.builder().id(leon.getId()).build());
@@ -226,7 +223,7 @@ class ChatBackEndApplicationTests {
             messageText.setContent(faker.text().text());
             messageText.setId(UUID.randomUUID().toString());
             messageText.setReact(new ArrayList<>());
-            messageText.setSeen(List.of(User.builder().id(sonpham.getId()).build(), User.builder().id(cuong.getId()).build()));
+            messageText.setSeen(Set.of(User.builder().id(sonpham.getId()).build(), User.builder().id(cuong.getId()).build()));
             if (i % 2 == 0) {
                 messageText.setReceiver(User.builder().id(sonpham.getId()).build());
                 messageText.setSender(User.builder().id(cuong.getId()).build());
