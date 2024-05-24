@@ -112,6 +112,7 @@ public class MessageController {
                             seen.add(User.builder().id(idSender).build());
                             message.setSeen(seen);
                         });
+                        conversation.setLastMessage();
                         if (user.getId().trim().equals(idSender.trim())){
                             messageListSender = conversation.getMessages();
                         }
