@@ -522,4 +522,31 @@ public class ChatService {
             }
         }
     }
+    @MessageMapping("/changeImageGroup")
+    public void changeImageGroup(@Payload String node) throws JsonProcessingException {
+        ObjectMapper mapper = new ObjectMapper();
+        JsonNode rootNode = mapper.readTree(node);
+        String userid = rootNode.get("userId").asText();
+        String url = rootNode.get("url").asText();
+        String idGroup = rootNode.get("idGroup").asText();
+        List<Member> memberList = messageService.updateGroup(userid,idGroup, url, "image");
+        if (memberList.size()!=0){
+            simpMessagingTemplate.convertAndSendToUser(idGroup, "/changeImageGroup", url);
+            messageNotificationService.sendNotification("đã thay đổi ảnh nhóm",userid,"",idGroup,NotificationType.UPDATE_GROUP);
+        }
+    }
+    @MessageMapping("/changeNameGroup")
+    public void changeNameGroup(@Payload String node) throws JsonProcessingException {
+        ObjectMapper mapper = new ObjectMapper();
+        JsonNode rootNode = mapper.readTree(node);
+        String userid = rootNode.get("userId").asText();
+        String name = rootNode.get("name").asText();
+        String idGroup = rootNode.get("idGroup").asText();
+        List<Member> memberList = messageService.updateGroup(userid,idGroup, name, "nameGroup");
+        if (memberList.size()!=0){
+            simpMessagingTemplate.convertAndSendToUser(idGroup, "/changeNameGroup", name);
+            messageNotificationService.sendNotification("đã thay đổi tên nhóm Thành "+name,userid,"",idGroup,NotificationType.UPDATE_GROUP);
+        }
+    }
+
 }

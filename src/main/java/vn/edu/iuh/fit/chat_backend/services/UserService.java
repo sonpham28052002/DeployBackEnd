@@ -211,7 +211,7 @@ public class UserService {
             messageNotification.setId(UUID.randomUUID().toString());
             messageNotification.setNotificationType(NotificationType.CREATE_GROUP);
             messageNotification.setSender(User.builder().id(member.getMember().getId()).build());
-            messageNotification.setSeen(new HashSet<>());
+            messageNotification.setSeen(Set.of(User.builder().id(member.getMember().getId()).build()));
             messageNotification.setReceiver(User.builder().id("group_" + newConversation.getIdGroup()).build());
             messageNotification.setMessageType(MessageType.NOTIFICATION);
             messageNotification.setSenderDate(LocalDateTime.now());

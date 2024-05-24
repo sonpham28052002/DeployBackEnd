@@ -17,7 +17,8 @@ public class MessageService {
 
     @Autowired
     private UserRepository userRepository;
-
+    @Autowired
+    private MessageNotificationService messageNotificationService;
 
     public boolean insertMessageSingleSender(Message message) {
         User sender = userRepository.findById(message.getSender().getId()).get();
@@ -207,6 +208,7 @@ public class MessageService {
 
     /**
      * xoá tin nhắn đơn
+     *
      * @param message
      * @param ownerID
      * @param idGroup
@@ -245,6 +247,7 @@ public class MessageService {
 
     /**
      * gửi tin nhắn đơn
+     *
      * @param message
      * @return
      */
@@ -306,44 +309,45 @@ public class MessageService {
         return null;
     }
 
-    public Message reactMessageSingle(Message message){
+    public Message reactMessageSingle(Message message) {
         try {
             Optional<User> userSender = userRepository.findById(message.getSender().getId());
             Optional<User> userReceiver = userRepository.findById(message.getReceiver().getId());
-            if (userSender.isEmpty() || userReceiver.isEmpty()){
+            if (userSender.isEmpty() || userReceiver.isEmpty()) {
                 return null;
             }
-            if (updateReactMessage(userSender.get(),message,userReceiver.get().getId())){
+            if (updateReactMessage(userSender.get(), message, userReceiver.get().getId())) {
                 userRepository.save(userSender.get());
             }
-            if (updateReactMessage(userReceiver.get(),message,userSender.get().getId())){
+            if (updateReactMessage(userReceiver.get(), message, userSender.get().getId())) {
                 userRepository.save(userReceiver.get());
             }
             return message;
-        }catch (Exception exception){
+        } catch (Exception exception) {
             exception.printStackTrace();
         }
         return null;
     }
-    public Message reactMessageGroup(Message message, String idGroup){
+
+    public Message reactMessageGroup(Message message, String idGroup) {
         try {
             Optional<User> userSender = userRepository.findById(message.getSender().getId());
-            if (userSender.isEmpty() ){
+            if (userSender.isEmpty()) {
                 return null;
             }
             List<Member> members = null;
-            for (Conversation conversation:userSender.get().getConversation()) {
-                if (conversation instanceof ConversationGroup && ((ConversationGroup) conversation).getIdGroup().trim().equals(idGroup.trim())){
+            for (Conversation conversation : userSender.get().getConversation()) {
+                if (conversation instanceof ConversationGroup && ((ConversationGroup) conversation).getIdGroup().trim().equals(idGroup.trim())) {
                     members = ((ConversationGroup) conversation).getMembers();
                     break;
                 }
             }
-            if (members != null){
-                for (Member member:members) {
-                    if (!member.getMemberType().equals(MemberType.LEFT_MEMBER)){
+            if (members != null) {
+                for (Member member : members) {
+                    if (!member.getMemberType().equals(MemberType.LEFT_MEMBER)) {
                         User user = userRepository.findById(member.getMember().getId()).get();
-                        for (Conversation conversation:user.getConversation()) {
-                            if (conversation instanceof ConversationGroup && ((ConversationGroup) conversation).getIdGroup().trim().equals(idGroup.trim())){
+                        for (Conversation conversation : user.getConversation()) {
+                            if (conversation instanceof ConversationGroup && ((ConversationGroup) conversation).getIdGroup().trim().equals(idGroup.trim())) {
                                 int index = conversation.getMessages().indexOf(message);
                                 conversation.getMessages().get(index).setReact(message.getReact());
                                 userRepository.save(user);
@@ -356,21 +360,60 @@ public class MessageService {
             }
 
             return null;
-        }catch (Exception exception){
+        } catch (Exception exception) {
             exception.printStackTrace();
         }
         return null;
     }
 
-    public boolean updateReactMessage(User user, Message message, String userCon){
-        for (Conversation conversation:user.getConversation()) {
-            if (conversation instanceof ConversationSingle && ((ConversationSingle) conversation).getUser().getId().trim().equals(userCon.trim())){
+    public boolean updateReactMessage(User user, Message message, String userCon) {
+        for (Conversation conversation : user.getConversation()) {
+            if (conversation instanceof ConversationSingle && ((ConversationSingle) conversation).getUser().getId().trim().equals(userCon.trim())) {
                 int index = conversation.getMessages().indexOf(message);
                 conversation.getMessages().get(index).setReact(message.getReact());
                 return true;
             }
         }
-        return  false;
+        return false;
+    }
+
+    public List<Member> updateGroup(String userid, String idGroup, String value, String type) {
+        try {
+            User user = userRepository.findById(userid).get();
+            List<Member> members = null;
+            for (Conversation conversation : user.getConversation()) {
+                if (conversation instanceof ConversationGroup && ((ConversationGroup) conversation).getIdGroup().equals(idGroup.trim())) {
+                    members = ((ConversationGroup) conversation).getMembers();
+                    break;
+                }
+            }
+            if (members != null) {
+                for (Member member : members) {
+                    if (!member.getMemberType().equals(MemberType.LEFT_MEMBER)) {
+                        User userMember = userRepository.findById(member.getMember().getId()).get();
+                        for (Conversation conversation : userMember.getConversation()) {
+                            if (conversation instanceof ConversationGroup && ((ConversationGroup) conversation).getIdGroup().equals(idGroup.trim())) {
+                                if (type.equals("image")) {
+                                    System.out.println("aaaaa");
+                                    ((ConversationGroup) conversation).setAvtGroup(value);
+                                    System.out.println(((ConversationGroup) conversation).getAvtGroup());
+                                } else if (type.equals("nameGroup")) {
+                                    ((ConversationGroup) conversation).setNameGroup(value);
+                                }
+                                conversation.setUpdateLast(LocalDateTime.now());
+                                userRepository.save(userMember);
+                                break;
+                            }
+                        }
+                    }
+                }
+                return members;
+            }
+            return new ArrayList<>();
+        } catch (Exception exception) {
+            exception.printStackTrace();
+        }
+        return new ArrayList<>();
     }
 
 }

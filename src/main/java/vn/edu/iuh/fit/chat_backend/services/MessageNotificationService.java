@@ -12,6 +12,7 @@ import vn.edu.iuh.fit.chat_backend.types.NotificationType;
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 @Service
@@ -27,7 +28,7 @@ public class MessageNotificationService {
         messageNotification.setNotificationType(type);
         messageNotification.setMessageType(MessageType.NOTIFICATION);
         messageNotification.setContent(content);
-        messageNotification.setSeen(new HashSet<>());
+        messageNotification.setSeen(Set.of(User.builder().id(idSender).build()));
         messageNotification.setSenderDate(LocalDateTime.now());
         messageNotification.setSender(User.builder().id(idSender).build());
         if (!idReceiver.equals("")) {
